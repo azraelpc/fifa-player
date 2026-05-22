@@ -44,7 +44,7 @@ sudo apt update
 sudo apt install python3 python3-pip -y
 ```
 
-Require instalar la libreria mutagen (para ver la duracion de las pistas. 
+Requiere instalar la libreria **mutagen** (para que detecte cual es la duracion de las pistas). 
 ```bash
 sudo apt update
 sudo apt install python3 python3-pip -y
