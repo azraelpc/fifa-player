@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIFA Retro Player</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body { background-color: #121212; color: #e5e7eb; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #121212; }
+        ::-webkit-scrollbar-thumb { background: #282828; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3e3e3e; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden select-none">
+
+    <div class="flex flex-1 overflow-hidden">
+        <aside class="w-64 lg:w-[22rem] bg-black p-4 lg:p-6 flex flex-col gap-4 hidden md:flex flex-shrink-0 h-full overflow-hidden">
+	    <div class="text-xl font-black text-white flex items-center gap-2 tracking-tight flex-shrink-0 mb-2">
+                <svg class="w-7 h-7 text-[#1db954]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.565.387-.86.207-2.377-1.454-5.37-1.783-8.893-.982-.336.075-.668-.135-.745-.47-.077-.337.135-.668.47-.745 3.856-.88 7.15-.502 9.822 1.133.296.182.387.567.206.857zm1.22-2.723c-.227.367-.707.487-1.074.26-2.72-1.672-6.87-2.157-10.08-1.182-.413.125-.847-.107-.972-.52-.125-.413.108-.847.52-.972 3.67-1.114 8.243-.573 11.35 1.34.367.226.487.707.256 1.074zm.105-2.834C14.383 8.807 8.545 8.614 5.14 9.648c-.522.158-1.076-.14-1.234-.662-.158-.522.14-1.076.662-1.234 3.916-1.19 10.364-.97 14.73 1.623.47.28.624.893.343 1.364-.28.47-.893.623-1.364.342z"/></svg>
+                <span>FIFA RetroPlayer</span>
+            </div>            
+            <div class="flex flex-col gap-4 text-gray-400 font-bold text-sm flex-shrink-0">
+                <a href="#" onclick="window.location.reload()" class="hover:text-white flex items-center gap-3 text-white transition">Home</a>
+                <button onclick="playAll()" class="hover:text-white flex items-center gap-3 transition text-left cursor-pointer w-full">Play All</button>
+                <div class="border-t border-gray-800 my-1"></div>
+                <p class="text-xs uppercase tracking-wider text-gray-500 font-black">Your Library</p>
+            </div>
+
+            <div class="flex-1 overflow-y-auto pr-1 flex flex-col gap-1 font-normal text-gray-400 pb-4" id="sidebar-album-list"></div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-b from-[#1f2937]/40 via-[#121212] to-[#121212]">
+            <div id="main-view">
+                <h2 class="text-2xl font-black text-white mb-6 tracking-tight">Albums</h2>
+                <div id="albums-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"></div>
+            </div>
+
+            <div id="album-view" class="hidden">
+                <button onclick="hideAlbum()" class="mb-6 text-sm font-bold text-gray-400 hover:text-white flex items-center gap-2 cursor-pointer transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back
+                </button>
+                <div class="flex flex-col sm:flex-row gap-6 items-center sm:items-end mb-8 text-center sm:text-left">
+                    <img id="view-cover" class="w-40 h-40 md:w-48 md:h-48 object-cover rounded shadow-2xl border border-white/5" src="" alt="">
+                    <div class="flex-1">
+                        <p class="text-xs font-bold uppercase text-gray-400">Album</p>
+                        <h3 id="view-title" class="text-2xl md:text-5xl font-black text-white mt-2 tracking-tight break-words"></h3>
+                        <p id="view-count" class="text-sm text-gray-400 mt-2 font-medium"></p>
+                    </div>
+                </div>
+                
+                <div class="bg-black/20 rounded-xl p-2 md:p-4 border border-white/5 backdrop-blur-md overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[400px] sm:min-w-0">
+                        <thead>
+                            <tr class="text-gray-400 text-xs border-b border-gray-800 uppercase tracking-wider">
+                                <th class="pb-3 w-10 text-center">#</th>
+                                <th class="pb-3 w-10 text-center">Play</th>
+                                <th class="pb-3">Title</th>
+                                <th class="pb-3 w-16 text-center">Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tracks-list" class="text-sm text-gray-300 divide-y divide-gray-800/30"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <audio id="audio-player"></audio>
+
+    <footer class="h-24 bg-[#181818] border-t border-gray-900 px-4 md:px-6 flex items-center justify-between z-50 gap-4">
+        <div class="flex items-center gap-3 w-1/3 md:w-1/4 flex-shrink-0">
+            <div class="w-12 h-12 md:w-14 md:h-14 bg-[#282828] rounded flex items-center justify-center border border-white/5 overflow-hidden flex-shrink-0 hidden sm:flex">
+                <img id="current-cover" class="w-full h-full object-cover hidden" src="" alt="">
+                <svg id="placeholder-cover" class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+            </div>
+            <div class="overflow-hidden whitespace-nowrap min-w-0 flex-1">
+                <p id="current-title" class="text-xs md:text-sm text-white font-semibold truncate">No track selected</p>
+                <p id="current-album" class="text-[10px] md:text-xs text-gray-400 truncate">-</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center flex-1 max-w-xl gap-2 min-w-0">
+            <div class="flex items-center gap-5">
+                <button onclick="playPrevious()" class="text-gray-400 hover:text-white transition cursor-pointer" title="Previous">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                </button>
+                <button onclick="togglePlay()" id="master-play-btn" class="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition cursor-pointer" title="Play">
+                    <svg id="play-icon" class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="pause-icon" class="w-4 h-4 fill-current hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </button>
+                <button onclick="playNext()" class="text-gray-400 hover:text-white transition cursor-pointer" title="Next">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                </button>
+            </div>
+            
+            <div class="w-full flex items-center gap-2 text-[10px] md:text-xs text-gray-400 font-mono">
+                <span id="time-current">0:00</span>
+                <div class="flex-1 h-1 bg-[#404040] rounded-full relative cursor-pointer group" id="progress-container" onclick="seekTrack(event)">
+                    <div class="absolute top-0 left-0 h-full bg-[#1db954] rounded-full group-hover:bg-[#1ed760]" id="progress-bar" style="width: 0%"></div>
+                </div>
+                <span id="time-total">0:00</span>
+            </div>
+        </div>
+
+        <div class="w-1/4 flex justify-end items-center h-12 flex-shrink-0 hidden sm:flex">
+            <canvas id="vu-meter" class="w-24 lg:w-32 h-10 bg-transparent"></canvas>
+        </div>
+    </footer>
+
+    <script>
+        let musicData = [];
+        let currentAlbumIdx = -1;
+        let currentTrackIdx = -1;
+        
+        const audioPlayer = document.getElementById('audio-player');
+        const progressBar = document.getElementById('progress-bar');
+        const progressContainer = document.getElementById('progress-container');
+        const timeCurrent = document.getElementById('time-current');
+        const timeTotal = document.getElementById('time-total');
+        
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+
+        let audioContext, analyser, dataArray, canvas, ctx, source;
+
+        async function init() {
+            try {
+                const res = await fetch('/api/music');
+                musicData = await res.json();
+                renderAlbums();
+                renderSidebar();
+            } catch (err) {
+                console.error("Error loading library:", err);
+            }
+        }
+
+        function renderAlbums() {
+            const grid = document.getElementById('albums-grid');
+            grid.innerHTML = musicData.map((item, index) => `
+                <div class="bg-[#181818] p-3 md:p-4 rounded-lg hover:bg-[#282828] transition cursor-pointer group shadow-lg border border-transparent hover:border-gray-800 relative" onclick="showAlbum(${index})">
+                    <div class="relative w-full aspect-square mb-3 md:mb-4 overflow-hidden rounded-md">
+                        <img class="w-full h-full object-cover" src="${item.cover}" onerror="this.src='https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300'">
+                        <button onclick="event.stopPropagation(); playAlbumFirstTrack(${index});" class="absolute bottom-2 right-2 w-9 h-9 md:w-10 md:h-10 bg-[#1db954] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-black shadow-2xl hover:scale-105 active:scale-95 cursor-pointer">
+                            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </button>
+                    </div>
+                    <h4 class="text-white font-bold text-xs md:text-sm truncate">${item.album}</h4>
+                    <p class="text-gray-400 text-[10px] md:text-xs mt-1">${item.tracks.length} tracks</p>
+                </div>
+            `).join('');
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('sidebar-album-list');
+            list.innerHTML = musicData.map((item, index) => {
+                const isCurrentAlbum = (currentAlbumIdx === index);
+                return `
+                <a href="#" onclick="showAlbum(${index})" class="transition py-0.5 text-xs block tracking-tight whitespace-nowrap overflow-visible text-left border-l-2 pl-2 ${
+                    isCurrentAlbum 
+                        ? 'text-[#1db954] font-bold border-[#1db954]' 
+                        : 'text-gray-400 hover:text-white border-transparent'
+                }" title="${item.album}">
+                    • ${item.album}
+                </a>
+                `;
+            }).join('');
+        }
+
+        function pressTrackRow(albumIdx, trackIdx) {
+            if (currentAlbumIdx === albumIdx && currentTrackIdx === trackIdx) {
+                togglePlay();
+            } else {
+                playTrack(albumIdx, trackIdx);
+            }
+        }
+
+        function playTrack(albumIdx, trackIdx) {
+            setupVisualizer();
+            currentAlbumIdx = albumIdx;
+            currentTrackIdx = trackIdx;
+
+            const album = musicData[albumIdx];
+            const track = album.tracks[trackIdx];
+
+            audioPlayer.src = track.file;
+            audioPlayer.play()
+                .then(() => updatePlaybackUI(true))
+                .catch(e => console.log("Playback error:", e));
+
+            document.getElementById('current-title').innerText = track.title;
+            document.getElementById('current-album').innerText = album.album;
+            
+            const currentCover = document.getElementById('current-cover');
+            const placeholder = document.getElementById('placeholder-cover');
+            
+            if (album.cover && album.cover !== "/music/default.jpg") {
+                currentCover.src = album.cover;
+                currentCover.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            } else {
+                currentCover.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+
+            showAlbum(albumIdx);
+        }
+
+        function showAlbum(index) {
+            const album = musicData[index];
+            document.getElementById('main-view').classList.add('hidden');
+            document.getElementById('album-view').classList.remove('hidden');
+            document.getElementById('view-title').innerText = album.album;
+            document.getElementById('view-cover').src = album.cover;
+            document.getElementById('view-count').innerText = `${album.tracks.length} tracks`;
+
+            const list = document.getElementById('tracks-list');
+            list.innerHTML = album.tracks.map((track, trackIdx) => {
+                const isCurrent = (currentAlbumIdx === index && currentTrackIdx === trackIdx);
+                const isPlaying = isCurrent && !audioPlayer.paused;
+
+                return `
+                <tr class="hover:bg-white/5 transition group ${isCurrent ? 'bg-white/5 text-[#1db954]' : ''}">
+                    <td class="p-2 md:p-3 text-center text-gray-500 font-bold">${trackIdx + 1}</td>
+                    <td class="p-2 md:p-3 text-center">
+                        <button onclick="pressTrackRow(${index}, ${trackIdx})" class="text-gray-400 hover:text-[#1db954] transition cursor-pointer">
+                            ${isPlaying ? 
+                                `<svg class="w-4 h-4 fill-current text-[#1db954]" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>` : 
+                                `<svg class="w-4 h-4 fill-current ${isCurrent ? 'text-[#1db954]' : ''}" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`
+                            }
+                        </button>
+                    </td>
+                    <td class="p-2 md:p-3 font-medium truncate max-w-[180px] sm:max-w-xs ${isCurrent ? 'text-[#1db954]' : 'text-white'}">${track.title}</td>
+                    <td class="p-2 md:p-3 text-center text-gray-400 font-mono text-xs">${track.duration}</td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        function hideAlbum() {
+            document.getElementById('album-view').classList.add('hidden');
+            document.getElementById('main-view').classList.remove('hidden');
+        }
+
+        function togglePlay() {
+            if (audioPlayer.src === "" && musicData.length > 0) {
+                playAll();
+                return;
+            }
+            if (audioPlayer.paused) {
+                audioPlayer.play().then(() => updatePlaybackUI(true));
+            } else {
+                audioPlayer.pause();
+                updatePlaybackUI(false);
+            }
+        }
+
+        function updatePlaybackUI(isPlaying) {
+            if (isPlaying) {
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+            } else {
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+            }
+            
+            renderSidebar();
+            
+            const albumView = document.getElementById('album-view');
+            if (!albumView.classList.contains('hidden') && currentAlbumIdx !== -1) {
+                showAlbum(currentAlbumIdx);
+            }
+        }
+
+        function playNext() {
+            if (currentAlbumIdx === -1 || currentTrackIdx === -1) return;
+            let nextTrackIdx = currentTrackIdx + 1;
+            let nextAlbumIdx = currentAlbumIdx;
+
+            if (nextTrackIdx < musicData[currentAlbumIdx].tracks.length) {
+                playTrack(nextAlbumIdx, nextTrackIdx);
+            } else {
+                nextAlbumIdx = currentAlbumIdx + 1;
+                if (nextAlbumIdx >= musicData.length) nextAlbumIdx = 0;
+                if (musicData[nextAlbumIdx].tracks.length > 0) playTrack(nextAlbumIdx, 0);
+            }
+        }
+
+        function playPrevious() {
+            if (currentAlbumIdx === -1 || currentTrackIdx === -1) return;
+            let prevTrackIdx = currentTrackIdx - 1;
+
+            if (prevTrackIdx >= 0) {
+                playTrack(currentAlbumIdx, prevTrackIdx);
+            } else {
+                let prevAlbumIdx = currentAlbumIdx - 1;
+                if (prevAlbumIdx < 0) prevAlbumIdx = musicData.length - 1;
+                
+                let lastTrackIdx = musicData[prevAlbumIdx].tracks.length - 1;
+                if (lastTrackIdx >= 0) playTrack(prevAlbumIdx, lastTrackIdx);
+            }
+        }
+
+        function playAlbumFirstTrack(index) {
+            if (musicData[index] && musicData[index].tracks.length > 0) {
+                playTrack(index, 0);
+            }
+        }
+
+        function playAll() {
+            if (musicData.length > 0 && musicData[0].tracks.length > 0) {
+                playTrack(0, 0);
+            }
+        }
+
+        audioPlayer.addEventListener('ended', () => {
+            playNext();
+        });
+
+        audioPlayer.addEventListener('timeupdate', () => {
+            if (isNaN(audioPlayer.duration)) return;
+            const pct = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progressBar.style.width = `${pct}%`;
+            timeCurrent.innerText = formatTime(audioPlayer.currentTime);
+        });
+
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            timeTotal.innerText = formatTime(audioPlayer.duration);
+        });
+
+        function formatTime(secs) {
+            if (isNaN(secs)) return "0:00";
+            const m = Math.floor(secs / 60);
+            const s = Math.floor(secs % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function seekTrack(event) {
+            if (audioPlayer.src === "") return;
+            const rect = progressContainer.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const pct = clickX / rect.width;
+            audioPlayer.currentTime = pct * audioPlayer.duration;
+        }
+
+        function setupVisualizer() {
+            canvas = document.getElementById('vu-meter');
+            if (!canvas || canvas.offsetParent === null) return; 
+            if (audioContext) return;
+
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 64; 
+            
+            source = audioContext.createMediaElementSource(audioPlayer);
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 40;
+
+            drawVisualizer();
+        }
+
+        function drawVisualizer() {
+            if (!analyser || document.getElementById('vu-meter').offsetParent === null) return;
+            requestAnimationFrame(drawVisualizer);
+
+            analyser.getByteFrequencyData(dataArray);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const barWidth = (canvas.width / 8) - 2;
+            let x = 0;
+
+            for (let i = 0; i < 8; i++) {
+                let value = dataArray[i * 2] || 0; 
+                let barHeight = (value / 255) * canvas.height;
+
+                let grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
+                grad.addColorStop(0, '#1db954');
+                grad.addColorStop(0.7, '#b9b41d');
+                grad.addColorStop(1, '#e91e63');
+
+                ctx.fillStyle = grad;
+                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+                x += barWidth + 2;
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
