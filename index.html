@@ -11,13 +11,22 @@
         ::-webkit-scrollbar-track { background: #121212; }
         ::-webkit-scrollbar-thumb { background: #282828; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #3e3e3e; }
+        /* Estilizado del slider de volumen */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 12px;
+            width: 12px;
+            border-radius: 50%;
+            background: #1db954;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden select-none">
 
     <div class="flex flex-1 overflow-hidden">
         <aside class="w-64 lg:w-[22rem] bg-black p-4 lg:p-6 flex flex-col gap-4 hidden md:flex flex-shrink-0 h-full overflow-hidden">
-	    <div class="text-xl font-black text-white flex items-center gap-2 tracking-tight flex-shrink-0 mb-2">
+            <div class="text-xl font-black text-white flex items-center gap-2 tracking-tight flex-shrink-0 mb-2">
                 <svg class="w-7 h-7 text-[#1db954]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.565.387-.86.207-2.377-1.454-5.37-1.783-8.893-.982-.336.075-.668-.135-.745-.47-.077-.337.135-.668.47-.745 3.856-.88 7.15-.502 9.822 1.133.296.182.387.567.206.857zm1.22-2.723c-.227.367-.707.487-1.074.26-2.72-1.672-6.87-2.157-10.08-1.182-.413.125-.847-.107-.972-.52-.125-.413.108-.847.52-.972 3.67-1.114 8.243-.573 11.35 1.34.367.226.487.707.256 1.074zm.105-2.834C14.383 8.807 8.545 8.614 5.14 9.648c-.522.158-1.076-.14-1.234-.662-.158-.522.14-1.076.662-1.234 3.916-1.19 10.364-.97 14.73 1.623.47.28.624.893.343 1.364-.28.47-.893.623-1.364.342z"/></svg>
                 <span>FIFA RetroPlayer</span>
             </div>            
@@ -105,8 +114,15 @@
             </div>
         </div>
 
-        <div class="w-1/4 flex justify-end items-center h-12 flex-shrink-0 hidden sm:flex">
-            <canvas id="vu-meter" class="w-24 lg:w-32 h-10 bg-transparent"></canvas>
+        <!-- Lateral derecho del footer restaurado con volumen y ecualizador -->
+        <div class="w-1/3 md:w-1/4 flex justify-end items-center gap-4 h-12 flex-shrink-0 hidden sm:flex">
+            <canvas id="vu-meter" class="w-20 lg:w-28 h-8 bg-transparent"></canvas>
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L7.75 9.5H4.5v5h3.25L12 18.75z"></path>
+                </svg>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" class="w-16 md:w-20 lg:w-24 h-1 bg-[#404040] rounded-full appearance-none cursor-pointer accent-[#1db954]" oninput="changeVolume(event)">
+            </div>
         </div>
     </footer>
 
@@ -126,15 +142,34 @@
 
         let audioContext, analyser, dataArray, canvas, ctx, source;
 
+        // Función de seguridad: Sanitiza cadenas de texto para prevenir DOM-based XSS
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
         async function init() {
             try {
                 const res = await fetch('/api/music');
                 musicData = await res.json();
                 renderAlbums();
                 renderSidebar();
+                
+                // Inicializa el volumen guardado en almacenamiento local o por defecto al 80%
+                const savedVolume = localStorage.getItem('player-volume') || 0.8;
+                audioPlayer.volume = savedVolume;
+                document.getElementById('volume-slider').value = savedVolume;
             } catch (err) {
                 console.error("Error loading library:", err);
             }
+        }
+
+        function changeVolume(event) {
+            const vol = event.target.value;
+            audioPlayer.volume = vol;
+            localStorage.setItem('player-volume', vol);
         }
 
         function renderAlbums() {
@@ -142,12 +177,12 @@
             grid.innerHTML = musicData.map((item, index) => `
                 <div class="bg-[#181818] p-3 md:p-4 rounded-lg hover:bg-[#282828] transition cursor-pointer group shadow-lg border border-transparent hover:border-gray-800 relative" onclick="showAlbum(${index})">
                     <div class="relative w-full aspect-square mb-3 md:mb-4 overflow-hidden rounded-md">
-                        <img class="w-full h-full object-cover" src="${item.cover}" onerror="this.src='https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300'">
+                        <img class="w-full h-full object-cover" src="${escapeHTML(item.cover)}" onerror="this.src='https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300'">
                         <button onclick="event.stopPropagation(); playAlbumFirstTrack(${index});" class="absolute bottom-2 right-2 w-9 h-9 md:w-10 md:h-10 bg-[#1db954] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-black shadow-2xl hover:scale-105 active:scale-95 cursor-pointer">
                             <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         </button>
                     </div>
-                    <h4 class="text-white font-bold text-xs md:text-sm truncate">${item.album}</h4>
+                    <h4 class="text-white font-bold text-xs md:text-sm truncate">${escapeHTML(item.album)}</h4>
                     <p class="text-gray-400 text-[10px] md:text-xs mt-1">${item.tracks.length} tracks</p>
                 </div>
             `).join('');
@@ -157,13 +192,14 @@
             const list = document.getElementById('sidebar-album-list');
             list.innerHTML = musicData.map((item, index) => {
                 const isCurrentAlbum = (currentAlbumIdx === index);
+                const safeAlbum = escapeHTML(item.album);
                 return `
                 <a href="#" onclick="showAlbum(${index})" class="transition py-0.5 text-xs block tracking-tight whitespace-nowrap overflow-visible text-left border-l-2 pl-2 ${
                     isCurrentAlbum 
                         ? 'text-[#1db954] font-bold border-[#1db954]' 
                         : 'text-gray-400 hover:text-white border-transparent'
-                }" title="${item.album}">
-                    • ${item.album}
+                }" title="${safeAlbum}">
+                    • ${safeAlbum}
                 </a>
                 `;
             }).join('');
@@ -232,8 +268,8 @@
                             }
                         </button>
                     </td>
-                    <td class="p-2 md:p-3 font-medium truncate max-w-[180px] sm:max-w-xs ${isCurrent ? 'text-[#1db954]' : 'text-white'}">${track.title}</td>
-                    <td class="p-2 md:p-3 text-center text-gray-400 font-mono text-xs">${track.duration}</td>
+                    <td class="p-2 md:p-3 font-medium truncate max-w-[180px] sm:max-w-xs ${isCurrent ? 'text-[#1db954]' : 'text-white'}">${escapeHTML(track.title)}</td>
+                    <td class="p-2 md:p-3 text-center text-gray-400 font-mono text-xs">${escapeHTML(track.duration)}</td>
                 </tr>
                 `;
             }).join('');
@@ -361,7 +397,7 @@
             dataArray = new Uint8Array(analyser.frequencyBinCount);
             ctx = canvas.getContext('2d');
             canvas.width = canvas.offsetWidth;
-            canvas.height = 40;
+            canvas.height = 32; // Adaptado al nuevo tamaño del footer
 
             drawVisualizer();
         }
