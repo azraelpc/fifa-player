@@ -210,53 +210,61 @@ class MusicServerHandler(BaseHTTPRequestHandler):
             pass
 
 def do_GET(self):
-        if self.path == '/' or self.path == '/index.html':
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            index_path = os.path.join(base_dir, 'index.html')
-            if os.path.exists(index_path):
-                self.send_response(200)
-                self.send_header('Content-Type', 'text/html; charset=utf-8')
-                self.end_headers()
-                with open(index_path, 'rb') as f:
-                    self.wfile.write(f.read())
-                return
-            else:
-                self.send_error(404, "index.html no encontrado")
-                return
-
-        if self.path == '/api/music':
+    if self.path == '/' or self.path == '/index.html':
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        index_path = os.path.join(base_dir, 'index.html')
+        if os.path.exists(index_path):
             self.send_response(200)
-            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Content-Type', 'text/html; charset=utf-8')
             self.end_headers()
-            self.wfile.write(json.dumps(scan_music()).encode('utf-8'))
+            with open(index_path, 'rb') as f:
+                self.wfile.write(f.read())
+            return
+        else:
+            self.send_error(404, "index.html no encontrado")
+            return
+
+    if self.path == '/api/music':
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.end_headers()
+        self.wfile.write(json.dumps(scan_music()).encode('utf-8'))
+        return
+        
+    if self.path.startswith('/music/'):
+        if self.path == '/music/default.jpg':
+            self.send_response(200)
+            self.send_header('Content-Type', 'image/jpeg')
+            self.end_headers()
+            self.wfile.write(b"") 
+            return
+
+        rel_file_path = unquote(self.path[7:]) 
+        
+        # Corrección del exploit Path Traversal:
+        # Se resuelven los enlaces simbólicos y ".." relativos de ambas rutas antes de comparar
+        base_dir_abs = os.path.realpath(MUSIC_DIR)
+        full_path = os.path.realpath(os.path.join(base_dir_abs, rel_file_path))
+        
+        if not full_path.startswith(base_dir_abs):
+            self.send_error(403, "Acceso denegado")
             return
             
-        if self.path.startswith('/music/'):
-            if self.path == '/music/default.jpg':
+        if os.path.exists(full_path) and os.path.isfile(full_path):
+            ext = full_path.lower()
+            if ext.endswith(('.mp3', '.flac', '.ogg', '.wav', '.m4a')):
+                self.manejar_fichero_audio(full_path)
+            else:
+                # Es una imagen de carátula
                 self.send_response(200)
-                self.send_header('Content-Type', 'image/jpeg')
+                if ext.endswith(('.jpg', '.jpeg')): self.send_header('Content-Type', 'image/jpeg')
+                elif ext.endswith('.png'): self.send_header('Content-Type', 'image/png')
                 self.end_headers()
-                self.wfile.write(b"") 
-                return
-
-            rel_file_path = unquote(self.path[7:]) 
-            full_path = os.path.join(MUSIC_DIR, rel_file_path)
+                with open(full_path, 'rb') as f:
+                    self.wfile.write(f.read())
+            return
             
-            if os.path.exists(full_path) and os.path.isfile(full_path):
-                ext = full_path.lower()
-                if ext.endswith(('.mp3', '.flac', '.ogg', '.wav', '.m4a')):
-                    self.manejar_fichero_audio(full_path)
-                else:
-                    # Es una imagen de carátula
-                    self.send_response(200)
-                    if ext.endswith(('.jpg', '.jpeg')): self.send_header('Content-Type', 'image/jpeg')
-                    elif ext.endswith('.png'): self.send_header('Content-Type', 'image/png')
-                    self.end_headers()
-                    with open(full_path, 'rb') as f:
-                        self.wfile.write(f.read())
-                return
-                
-        self.send_error(404, "No encontrado")
+    self.send_error(404, "No encontrado")
 
 # Inyección dinámica del método revisado en el Handler
 MusicServerHandler.do_GET = do_GET
