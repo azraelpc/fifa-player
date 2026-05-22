@@ -230,6 +230,25 @@ def do_GET(self):
         self.end_headers()
         self.wfile.write(json.dumps(scan_music()).encode('utf-8'))
         return
+
+    if self.path.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')) and not self.path.startswith('/music/'):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        # Extraemos el nombre del archivo eliminando la barra inicial
+        local_file = os.path.basename(unquote(self.path))
+        full_path = os.path.join(base_dir, local_file)
+
+        if os.path.exists(full_path) and os.path.isfile(full_path):
+            self.send_response(200)
+            if full_path.lower().endswith(('.jpg', '.jpeg')): self.send_header('Content-Type', 'image/jpeg')
+            elif full_path.lower().endswith('.png'): self.send_header('Content-Type', 'image/png')
+            elif full_path.lower().endswith('.webp'): self.send_header('Content-Type', 'image/webp')
+            self.end_headers()
+            with open(full_path, 'rb') as f:
+                self.wfile.write(f.read())
+            return
+        else:
+            self.send_error(404, "Imagen local no encontrada")
+            return
         
     if self.path.startswith('/music/'):
         if self.path == '/music/default.jpg':
