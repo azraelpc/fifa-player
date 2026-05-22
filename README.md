@@ -44,6 +44,13 @@ sudo apt update
 sudo apt install python3 python3-pip -y
 ```
 
+Require instalar la libreria mutagen (para ver la duracion de las pistas. 
+```bash
+sudo apt update
+sudo apt install python3 python3-pip -y
+pip install mutagen
+```
+
 ---
 
 ## Instalación y Despliegue Local
@@ -124,7 +131,7 @@ Deberías ver un indicador en verde que pone **`active (running)`**.
 
 ---
 
-## Comandos Útiles de Administración 🛠️
+## Comandos Útiles de Administración
 
 Si realizas modificaciones en el código de tu `server.py` o quieres controlar el ciclo de vida del proceso, utiliza los siguientes comandos estándar:
 
@@ -144,7 +151,7 @@ Si realizas modificaciones en el código de tu `server.py` o quieres controlar e
 
 ---
 
-## Contribuciones y Notas de Desarrollo 🧠
+## Contribuciones y Notas de Desarrollo
 
 - **Limpieza de Caché:** Al realizar ajustes pesados en el frontend (`index.html`), se recomienda refrescar el navegador cliente utilizando el atajo **`Ctrl + F5`** para forzar la recarga de scripts y estilos interpretados por Tailwind.
 - **Rendimiento Móvil:** Las propiedades de visualización CSS eluden los cálculos pesados de renderizado del canvas gráfico en resoluciones inferiores a los puntos de ruptura móviles para mitigar el drenaje excesivo de batería en terminales portátiles.
