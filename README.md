@@ -24,8 +24,8 @@ La ruta de las carpetas de musica están definias en el server.py, variable MUSI
 ~/fifa-player/
 ├── index.html          # Frontend responsivo estructurado con Tailwind CSS
 ├── server.py           # Servidor backend en Python (API y servidor de estáticos)
-└── music/              # Directorio que aloja las carpetas de música (Álbumes - el path hay que definirlo en el server.py, no es ./music por defecto!)
-    ├── FIFA 98/
+└── music/              # ojo: el server.py lee la musica del path de la variable MUSIC_DIR y lo mapea al servidor web en la ruta virtual /music
+    ├── FIFA 98/        
     │   ├── cover.jpg
     │   └── track1.mp3
     └── FIFA 2004/
@@ -37,14 +37,14 @@ La ruta de las carpetas de musica están definias en el server.py, variable MUSI
 
 ## Requisitos Previos
 
-El sistema está optimizado para funcionar en **Ubuntu** (probado en Ubuntu 22.04 / 24.04 LTS) y solo requiere Python 3 instalado en el sistema:
+El sistema está optimizado para funcionar en **Ubuntu** (probado en Ubuntu 22.04 / 24.04 LTS) y requiere Python 3 instalado en el sistema:
 
 ```bash
 sudo apt update
 sudo apt install python3 python3-pip -y
 ```
 
-Requiere instalar la libreria **mutagen** (para que detecte cual es la duracion de las pistas). 
+...y tambien instalar la libreria **mutagen** (para que detecte cual es la duracion de las pistas). 
 ```bash
 sudo apt update
 sudo apt install python3 python3-pip -y
