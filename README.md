@@ -2,6 +2,9 @@
 
 Un reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify, diseñado específicamente para revivir las bandas sonoras retro de la saga de videojuegos de fútbol de EA (FIFA). El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y pantallas clásicas de 1024x768).
 
+<img width="1024" height="768" alt="{5A1C3CE7-6D9C-427C-9987-417FABAC1A36}" src="https://github.com/user-attachments/assets/94103597-2cd1-4c76-b438-d16feff78a80" />
+
+
 ## Características principales ✨
 
 - **Interfaz Clon de Spotify:** Diseño oscuro elegante con transiciones suaves, barras de progreso interactivas y control de volumen visual.
