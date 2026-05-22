@@ -1,9 +1,12 @@
 # FIFA Retro Player 🎮🎵
 
-Un reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify, diseñado específicamente para revivir las bandas sonoras retro de la saga de videojuegos de fútbol de EA (FIFA). El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y pantallas clásicas de 1024x768).
+Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y pantallas clásicas de 1024x768).
+
+Lo he hecho para alojar las bandas sonoras de FIFA que tengo en mi disco duro externo (always connected) pero puede usarse para cualquier carpeta de musica, con pequeños ajustes. Lo hice como python en el puerto 5154, luego lo conecto a un subdominio de mi web via cloudflare tunnels.
+
+La ruta de las carpetas de musica están definias en el server.py, variable MUSIC_DIR. Para las portadas, justo a los mp3 debe haber algun archivo de imagen, tomando como prioridad los que tengan nombre como cover.png, front.png (o .jpg)
 
 <img width="712" alt="{5A1C3CE7-6D9C-427C-9987-417FABAC1A36}" src="https://github.com/user-attachments/assets/94103597-2cd1-4c76-b438-d16feff78a80" />
-
 
 ## Características principales ✨
 
@@ -15,7 +18,7 @@ Un reproductor de música web ligero y responsivo inspirado en la interfaz clás
 - **Visualizador de Audio (VU-Meter):** Renderizado dinámico en un componente Canvas HTML5 utilizando la API de Audio Context de JavaScript (oculto de forma inteligente en dispositivos móviles para optimizar rendimiento).
 - **Backend Fluido:** Servidor de archivos ligero implementado en Python que escanea automáticamente el directorio de música, extrae las pistas y expone un endpoint JSON robusto.
 
-## Estructura del Proyecto 📁
+## Estructura del Proyecto
 
 ```bash
 ~/fifa-player/
@@ -32,7 +35,7 @@ Un reproductor de música web ligero y responsivo inspirado en la interfaz clás
 
 ---
 
-## Requisitos Previos 📋
+## Requisitos Previos
 
 El sistema está optimizado para funcionar en **Ubuntu** (probado en Ubuntu 22.04 / 24.04 LTS) y solo requiere Python 3 instalado en el sistema:
 
@@ -43,7 +46,7 @@ sudo apt install python3 python3-pip -y
 
 ---
 
-## Instalación y Despliegue Local 🚀
+## Instalación y Despliegue Local
 
 1. **Crear la estructura de directorios:**
    ```bash
@@ -62,7 +65,7 @@ sudo apt install python3 python3-pip -y
 
 ---
 
-## Configuración como Servicio del Sistema en Ubuntu (`systemd`) 🛠️
+## Configuración como Servicio del Sistema en Ubuntu (`systemd`)
 
 Para asegurar que el reproductor se inicie automáticamente cuando arranque tu servidor Ubuntu, se ejecute en segundo plano de manera persistente y se reinicie solo si hay algún fallo, configuraremos un servicio de `systemd`.
 
@@ -74,7 +77,7 @@ sudo nano /etc/systemd/system/fifa-player.service
 ```
 
 ### 2. Pegar la siguiente configuración
-*Nota: Asegúrate de reemplazar `azraelpc` por tu nombre de usuario exacto de Ubuntu en las rutas correspondientes si utilizas otro diferente.*
+*Nota: Asegúrate de reemplazar `shurmano` por tu nombre de usuario exacto de Ubuntu en las rutas correspondientes si utilizas otro diferente.*
 
 ```ini
 [Unit]
@@ -83,9 +86,9 @@ After=network.target
 
 [Service]
 Type=simple
-User=azraelpc
-WorkingDirectory=/home/azraelpc/fifa-player
-ExecStart=/usr/bin/python3 /home/azraelpc/fifa-player/server.py
+User=shurmano
+WorkingDirectory=/home/shurmano/fifa-player
+ExecStart=/usr/bin/python3 /home/shurmano/fifa-player/server.py
 Restart=always
 RestartSec=5
 StandardOutput=syslog
@@ -146,4 +149,4 @@ Si realizas modificaciones en el código de tu `server.py` o quieres controlar e
 - **Limpieza de Caché:** Al realizar ajustes pesados en el frontend (`index.html`), se recomienda refrescar el navegador cliente utilizando el atajo **`Ctrl + F5`** para forzar la recarga de scripts y estilos interpretados por Tailwind.
 - **Rendimiento Móvil:** Las propiedades de visualización CSS eluden los cálculos pesados de renderizado del canvas gráfico en resoluciones inferiores a los puntos de ruptura móviles para mitigar el drenaje excesivo de batería en terminales portátiles.
 
-Disfruta de las mejores bandas sonoras retro allá donde estés. ⚽🎶
+- **IA:** Usado Gemini AI plus para acelerar el desarrollo de la web.
