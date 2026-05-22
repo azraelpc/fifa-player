@@ -224,6 +224,14 @@ def do_GET(self):
             self.send_error(404, "index.html no encontrado")
             return
 
+    if self.path == '/favicon.png':
+        self.send_response(200)
+        self.send_header('Content-Type', 'image/png')
+        self.end_headers()
+        with open('favicon.png', 'rb') as f:
+            self.wfile.write(f.read())
+            return
+
     if self.path == '/api/music':
         self.send_response(200)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
