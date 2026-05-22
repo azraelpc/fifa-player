@@ -8,7 +8,7 @@ La ruta de las carpetas de musica están definias en el server.py, variable MUSI
 
 <img width="712" alt="{5A1C3CE7-6D9C-427C-9987-417FABAC1A36}" src="https://github.com/user-attachments/assets/94103597-2cd1-4c76-b438-d16feff78a80" />
 
-## Características principales ✨
+## Características principales 
 
 - **Interfaz Clon de Spotify:** Diseño oscuro elegante con transiciones suaves, barras de progreso interactivas y control de volumen visual.
 - **Barra Lateral Inteligente con Scroll Independiente:** El menú lateral calcula dinámicamente el espacio restante para evitar colisiones con el reproductor inferior en pantallas de baja resolución (como portátiles o monitores antiguos), ofreciendo scroll interno autónomo.
@@ -24,7 +24,7 @@ La ruta de las carpetas de musica están definias en el server.py, variable MUSI
 ~/fifa-player/
 ├── index.html          # Frontend responsivo estructurado con Tailwind CSS
 ├── server.py           # Servidor backend en Python (API y servidor de estáticos)
-└── music/              # Directorio que aloja las carpetas de música (Álbumes)
+└── music/              # Directorio que aloja las carpetas de música (Álbumes - el path hay que definirlo en el server.py, no es ./music por defecto!)
     ├── FIFA 98/
     │   ├── cover.jpg
     │   └── track1.mp3
