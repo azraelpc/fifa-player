@@ -64,7 +64,7 @@
                 </div>
                 
                 <div class="bg-black/20 rounded-xl p-2 md:p-4 border border-white/5 backdrop-blur-md overflow-x-auto">
-                    <table class="w-full text-left border-collapse min-w-[400px] sm:min-w-0">
+                    <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="text-gray-400 text-xs border-b border-gray-800 uppercase tracking-wider">
                                 <th class="pb-3 w-10 text-center">#</th>
@@ -221,33 +221,35 @@
 	}
 
 
-        function refreshTracksList(albumIdx) {
-            const album = musicData[albumIdx];
-            const list = document.getElementById('tracks-list');
+    function refreshTracksList(albumIdx) {
+        const album = musicData[albumIdx];
+        const list = document.getElementById('tracks-list');
+        
+        list.innerHTML = album.tracks.map((track, trackIdx) => {
+            const isCurrent = (currentAlbumIdx === albumIdx && currentTrackIdx === trackIdx);
+            const isPlaying = isCurrent && !audioPlayer.paused;
             
-            // Solo actualizamos el contenido del TBODY
-            list.innerHTML = album.tracks.map((track, trackIdx) => {
-                const isCurrent = (currentAlbumIdx === albumIdx && currentTrackIdx === trackIdx);
-                const isPlaying = isCurrent && !audioPlayer.paused;
-                return `
-                <tr ondblclick="pressTrackRow(${albumIdx}, ${trackIdx})"
-                    class="hover:bg-white/5 transition group ${isCurrent ? 'bg-white/5 text-[#1db954]' : ''}">
-                    <td class="p-2 md:p-3 text-center text-gray-500 font-bold">${trackIdx + 1}</td>
-                    <td class="p-2 md:p-3 text-center">
-                        <button onclick="pressTrackRow(${albumIdx}, ${trackIdx})" class="text-gray-400 hover:text-[#1db954] transition cursor-pointer">
-                            ${isPlaying ? 
-                                `<svg class="w-4 h-4 fill-current text-[#1db954]" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>` : 
-                                `<svg class="w-4 h-4 fill-current ${isCurrent ? 'text-[#1db954]' : ''}" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`
-                            }
-                        </button>
-                    </td>
-                    <td class="p-2 md:p-3 font-medium truncate max-w-[180px] sm:max-w-xs ${isCurrent ? 'text-[#1db954]' : 'text-white'}">${escapeHTML(track.title)}</td>
-                    <td class="p-2 md:p-3 text-center text-gray-400 font-mono text-xs">${escapeHTML(track.duration)}</td>
-                </tr>
-                `;
-            }).join('');
-        }
+            // Quitamos la extensión del archivo para el listado visual
+            const cleanTitle = track.title.replace(/\.[^/.]+$/, "");
 
+            return `
+            <tr ondblclick="pressTrackRow(${albumIdx}, ${trackIdx})"
+                class="hover:bg-white/5 transition group ${isCurrent ? 'bg-white/5 text-[#1db954]' : ''}">
+                <td class="p-2 md:p-3 text-center text-gray-500 font-bold text-xs md:text-sm">${trackIdx + 1}</td>
+                <td class="p-1 md:p-3 text-center">
+                    <button onclick="pressTrackRow(${albumIdx}, ${trackIdx})" class="text-gray-400 hover:text-[#1db954] transition cursor-pointer">
+                        ${isPlaying ? 
+                            `<svg class="w-4 h-4 fill-current text-[#1db954]" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>` : 
+                            `<svg class="w-4 h-4 fill-current ${isCurrent ? 'text-[#1db954]' : ''}" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`
+                        }
+                    </button>
+                </td>
+                <td class="p-2 md:p-3 font-medium truncate max-w-[140px] sm:max-w-xs ${isCurrent ? 'text-[#1db954]' : 'text-white'}">${escapeHTML(cleanTitle)}</td>
+                <td class="p-2 md:p-3 text-center text-gray-400 font-mono text-xs">${escapeHTML(track.duration)}</td>
+            </tr>
+            `;
+        }).join('');
+    }
         function renderSidebar() {
             const list = document.getElementById('sidebar-album-list');
             list.innerHTML = musicData.map((item, index) => {
@@ -314,7 +316,7 @@
 
         }
 
-	function showAlbum(index) {
+        function showAlbum(index) {
             const album = musicData[index];
 
             document.getElementById('main-view').classList.add('hidden');
@@ -342,12 +344,15 @@
             list.innerHTML = album.tracks.map((track, trackIdx) => {
                 const isCurrent = (currentAlbumIdx === index && currentTrackIdx === trackIdx);
                 const isPlaying = isCurrent && !audioPlayer.paused;
+                
+                // Quitamos la extensión del archivo para el listado visual
+                const cleanTitle = track.title.replace(/\.[^/.]+$/, "");
 
                 return `
                 <tr ondblclick="pressTrackRow(${index}, ${trackIdx})"
-		    class="hover:bg-white/5 transition group ${isCurrent ? 'bg-white/5 text-[#1db954]' : ''}">
-                    <td class="p-2 md:p-3 text-center text-gray-500 font-bold">${trackIdx + 1}</td>
-                    <td class="p-2 md:p-3 text-center">
+                    class="hover:bg-white/5 transition group ${isCurrent ? 'bg-white/5 text-[#1db954]' : ''}">
+                    <td class="p-2 md:p-3 text-center text-gray-500 font-bold text-xs md:text-sm">${trackIdx + 1}</td>
+                    <td class="p-1 md:p-3 text-center">
                         <button onclick="pressTrackRow(${index}, ${trackIdx})" class="text-gray-400 hover:text-[#1db954] transition cursor-pointer">
                             ${isPlaying ? 
                                 `<svg class="w-4 h-4 fill-current text-[#1db954]" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>` : 
@@ -355,12 +360,12 @@
                             }
                         </button>
                     </td>
-                    <td class="p-2 md:p-3 font-medium truncate max-w-[180px] sm:max-w-xs ${isCurrent ? 'text-[#1db954]' : 'text-white'}">${escapeHTML(track.title)}</td>
+                    <td class="p-2 md:p-3 font-medium truncate max-w-[140px] sm:max-w-xs ${isCurrent ? 'text-[#1db954]' : 'text-white'}">${escapeHTML(cleanTitle)}</td>
                     <td class="p-2 md:p-3 text-center text-gray-400 font-mono text-xs">${escapeHTML(track.duration)}</td>
                 </tr>
                 `;
             }).join('');
-        }
+    }
 
         function hideAlbum() {
             document.getElementById('album-view').classList.add('hidden');
