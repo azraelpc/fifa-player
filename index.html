@@ -351,10 +351,8 @@
             document.getElementById('main-view').classList.add('hidden');
             document.getElementById('album-view').classList.remove('hidden');
 
-            if (index !== lastAlbumIndex) {
-                document.querySelector('main').scrollTop = 0;
-                lastAlbumIndex = index;
-            }
+            lastAlbumIndex = index;
+            document.querySelector('main').scrollTop = 0;
 
             document.getElementById('view-title').innerHTML = `
                 <div class="flex items-center gap-3">
@@ -385,7 +383,11 @@
 
         function togglePlay() {
             if (audioPlayer.src === "" && musicData.length > 0) {
-                playAll();
+                if (lastAlbumIndex !== -1 && musicData[lastAlbumIndex].tracks.length > 0) {
+                    playTrack(lastAlbumIndex, 0);
+                } else {
+                    playAll();
+                }
                 return;
             }
             if (audioPlayer.paused) {
