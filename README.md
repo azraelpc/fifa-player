@@ -173,6 +173,7 @@ Solo tienes que crear un archivo llamado `pass.txt` en la misma carpeta raíz do
 
 ```bash
 echo "G3l1p011a5" > pass.txt
+```
 
 La próxima vez que accedas a la web (o si el almacenamiento local expira), el servidor interceptará las peticiones y cargará una pantalla de bloqueo con un fondo animado en Three.js. 
 La contraseña se almacena de forma segura en el localStorage de tu navegador (azpwd) y se envía al servidor mediante cabeceras HTTP personalizadas (X-Azify-Pass).
