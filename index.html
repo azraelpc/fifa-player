@@ -190,7 +190,7 @@
             grid.innerHTML = musicData.map((item, index) => `
                 <div class="bg-[#181818] p-3 md:p-4 rounded-lg hover:bg-[#282828] transition cursor-pointer group shadow-lg border border-transparent hover:border-gray-800 relative" onclick="showAlbum(${index})">
                     <div class="relative w-full aspect-square mb-3 md:mb-4 overflow-hidden rounded-md">
-                        <img class="w-full h-full object-cover" src="${encodeURI(item.cover)}" onerror="this.src='./nocover.jpg'">
+			<img class="w-full h-full object-cover" src="${item.cover}" onerror="this.src='./nocover.jpg'">
                         <button onclick="event.stopPropagation(); playAlbumFirstTrack(${index});" class="absolute bottom-2 right-2 w-9 h-9 md:w-10 md:h-10 bg-[#1db954] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-black shadow-2xl hover:scale-105 active:scale-95 cursor-pointer">
                             <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         </button>
