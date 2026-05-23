@@ -1,5 +1,7 @@
 # AZify Player 1.0 🎵
 
+<img height="50" alt="{939BC6ED-591F-452B-8653-628985BE4F13}" src="https://github.com/user-attachments/assets/7491c8ad-eccd-491d-9e59-1efcbcaf90b4" />
+
 Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. Sirve por hhtp por defecto en el puerto 5155.
 
 Soporta los formatos tipicos (mp3, ogg, flac, etc). El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y ordenadores a baja resolución). 
