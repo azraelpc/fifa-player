@@ -1,12 +1,12 @@
 # FIFA Retro Player 🎮🎵
 
-Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y pantallas clásicas de 1024x768 - o al menos debería, necesito testear en movil/tablet aun).
+Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y ordenadores a baja resolución).
 
-Lo he hecho para alojar las bandas sonoras de FIFA que tengo en mi disco duro externo (always connected) pero puede usarse para cualquier carpeta de musica, con pequeños ajustes. Lo hice como python en el puerto 5154, luego lo conecto a un subdominio de mi web via cloudflare tunnels.
+Lo he hecho inicialmente para alojar las bandas sonoras de FIFA que tengo en mi disco duro externo (always connected) pero puede usarse para cualquier carpeta de musica, con pequeños ajustes. Lo hice como python en el puerto 5154, luego lo conecto a un subdominio de mi web via cloudflare tunnels. Igual me animo a hacer un cliente .apk para Android Auto, con lo que podría sustituir al Subsonic que uso actualmente en el coche.
 
-La ruta de las carpetas de musica están definias en el server.py, variable MUSIC_DIR. Para las portadas, justo a los mp3 debe haber algun archivo de imagen, tomando como prioridad los que tengan nombre como cover.png, front.png (o .jpg)
+La ruta de las carpetas de musica están definias en el server.py, variable MUSIC_DIR. Para las portadas, justo a los mp3 debe haber algun archivo de imagen, tomando como prioridad los que tengan nombre como cover.png, front.png (o .jpg). Obviamente los albumes no los subo al github ;)
 
-<img width="712" alt="{5A1C3CE7-6D9C-427C-9987-417FABAC1A36}" src="https://github.com/user-attachments/assets/94103597-2cd1-4c76-b438-d16feff78a80" />
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/48af6d5a-5138-4f72-ac83-a1a14995e4e5" />
 
 ## Características principales 
 
@@ -55,20 +55,20 @@ pip install mutagen
 
 ## Instalación y Despliegue Local
 
-1. **Crear la estructura de directorios:**
+1. **Crear la estructura de directorios:** (si usas /music, acuerdate de cambiar la variable del patch en el server.py, que yo uso mi /superdisk/...)
    ```bash
    mkdir -p ~/fifa-player/music
    cd ~/fifa-player
    ```
 
 2. **Asegurar los ficheros en su sitio:**
-   Coloca tu archivo `index.html` y tu script `server.py` dentro de la carpeta raíz `~/fifa-player/`.
+   Coloca tu archivo `index.html` y tu script `server.py` dentro de la carpeta raíz `~/fifa-player/`. Copia o crea tu favicon.png si quieres.
 
 3. **Ejecutar manualmente en segundo plano (para pruebas):**
    ```bash
    python3 server.py
    ```
-   El servidor web se levantará en el puerto de red local correspondiente (`5154`). Puedes acceder desde Chrome usando `http://localhost:5154` o la IP local de tu servidor.
+   El servidor web se levantará en el puerto de red local correspondiente (`5154`). Puedes acceder desde Chrome o Carbonyl usando `http://localhost:5154` o la IP local de tu servidor.
 
 ---
 
