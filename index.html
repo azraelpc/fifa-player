@@ -227,6 +227,31 @@
                 // Foco por defecto en el filtro
                 document.getElementById('search-filter').focus();
 
+                // Auto-refresco en segundo plano a los 7 segundos
+                setTimeout(async () => {
+                    const checkRes = await fetch('/api/music', { headers: { 'X-Azify-Pass': pwd } });
+                    if (checkRes.status === 200) {
+                        const newData = await checkRes.json();
+                        
+                        // COMPARACIÓN REAL: Detecta cambios en carpetas, canciones, nombres o carátulas
+                        if (JSON.stringify(newData) !== JSON.stringify(musicData)) {
+                            musicData = newData;
+                            
+                            // Recalcula los índices basándose en lo que haya escrito en el filtro
+                            const query = document.getElementById('search-filter').value.toLowerCase().trim();
+                            filteredIndices = [];
+                            musicData.forEach((item, index) => {
+                                if (item.album.toLowerCase().includes(query)) {
+                                    filteredIndices.push(index);
+                                }
+                            });
+                            renderAlbums();
+                            renderSidebar();
+                        }
+                    }
+                }, 7000);
+
+
             } catch (err) {
                 console.error("Error cargando la música:", err);
                 grid.innerHTML = '<p class="text-red-500">Error loading music library.</p>';

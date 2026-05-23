@@ -266,6 +266,10 @@ class MusicServerHandler(BaseHTTPRequestHandler):
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
                 self.end_headers()
                 self.wfile.write(json.dumps(CACHED_LIBRARY).encode('utf-8'))
+                
+                # Lanzamos el escaneo en segundo plano automáticamente
+                import threading
+                threading.Thread(target=actualizar_biblioteca).start()
                 return
 
             # Servir ficheros de música/imágenes
@@ -314,11 +318,20 @@ class MusicServerHandler(BaseHTTPRequestHandler):
 
 CACHED_LIBRARY = []
 
+import threading
+lock_escaneo = threading.Lock()
+
 def actualizar_biblioteca():
     global CACHED_LIBRARY
-    print("Escaneando biblioteca...")
-    CACHED_LIBRARY = scan_music()
-    print("Escaneo completado.")
+    # Si ya se está escaneando, salimos para no duplicar procesos en el disco
+    if not lock_escaneo.acquire(blocking=False):
+        return
+    try:
+        print("Escaneando biblioteca en segundo plano...")
+        CACHED_LIBRARY = scan_music()
+        print("Escaneo en segundo plano completado.")
+    finally:
+        lock_escaneo.release()
 
 if __name__ == '__main__':
     evitar_doble_ejecucion()
