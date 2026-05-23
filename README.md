@@ -12,7 +12,7 @@ Para las portadas, justo a los mp3 debe haber algun archivo de imagen, tomando c
 
 Para hacerlo sencillo (como si fueran CDs de verdad) la estructura preferible es un CD por carpeta, con su png/jpg de caratula. Aunque el script busca en todas las subcarpetas de la ruta dada (eg: "/musica/carpeta1/carpeta2/Album Chulo" aparecerá en la lista de CDs como "Album Chulo").
 
-<img width="800" alt="{402A1638-19C8-4F2D-939A-E34ABB2A5482}" src="https://github.com/user-attachments/assets/fdc33a71-37b1-4f32-9e61-a50e1304151b" />
+<img width="750" alt="{E06B8978-8656-4CC8-9D2E-7199131390B2}" src="https://github.com/user-attachments/assets/31cf9b32-09e1-4fa6-9dc0-9062a5390681" />
 
 ## Características principales 
 
