@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FIFA Retro Player</title>
+    <title>AZify Player</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
@@ -32,7 +32,8 @@
         <aside class="w-64 lg:w-[22rem] bg-black p-4 lg:p-6 flex flex-col gap-4 hidden md:flex flex-shrink-0 h-full overflow-hidden">
             <div class="text-xl font-black text-white flex items-center gap-2 tracking-tight flex-shrink-0 mb-2">
                 <svg class="w-7 h-7 text-[#1db954]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.565.387-.86.207-2.377-1.454-5.37-1.783-8.893-.982-.336.075-.668-.135-.745-.47-.077-.337.135-.668.47-.745 3.856-.88 7.15-.502 9.822 1.133.296.182.387.567.206.857zm1.22-2.723c-.227.367-.707.487-1.074.26-2.72-1.672-6.87-2.157-10.08-1.182-.413.125-.847-.107-.972-.52-.125-.413.108-.847.52-.972 3.67-1.114 8.243-.573 11.35 1.34.367.226.487.707.256 1.074zm.105-2.834C14.383 8.807 8.545 8.614 5.14 9.648c-.522.158-1.076-.14-1.234-.662-.158-.522.14-1.076.662-1.234 3.916-1.19 10.364-.97 14.73 1.623.47.28.624.893.343 1.364-.28.47-.893.623-1.364.342z"/></svg>
-                <span>FIFA RetroPlayer</span>
+                <span class="hidden lg:inline">AZify Player</span>
+                <span class="lg:hidden">AZify</span>
             </div>            
             <div class="flex flex-col gap-4 text-gray-400 font-bold text-sm flex-shrink-0">
 		<a href="javascript:void(0)" onclick="showHome()" class="hover:text-white flex items-center gap-3 text-white transition">Home</a>
@@ -76,7 +77,6 @@
                         <tbody id="tracks-list" class="text-sm text-gray-300 divide-y divide-gray-800/30"></tbody>
                     </table>
                 </div>
-
             </div>
         </main>
     </div>
@@ -136,7 +136,6 @@
         let currentTrackIdx = -1;
         let lastAlbumIndex = -1;
 
-        
         const audioPlayer = document.getElementById('audio-player');
         const progressBar = document.getElementById('progress-bar');
         const progressContainer = document.getElementById('progress-container');
@@ -147,15 +146,18 @@
         const pauseIcon = document.getElementById('pause-icon');
 
         let audioContext, analyser, dataArray, canvas, ctx, source;
+        
+        // Variables para el scrolling del Title de la pestaña
+        let titleScrollInterval = null;
+        let currentScrollText = "";
 
-	function showHome() {
-	    document.getElementById('album-view').classList.add('hidden');
-	    document.getElementById('main-view').classList.remove('hidden');
-        const mainContainer = document.querySelector('main');
-        mainContainer.scrollTop = 0;
-	}
+        function showHome() {
+            document.getElementById('album-view').classList.add('hidden');
+            document.getElementById('main-view').classList.remove('hidden');
+            const mainContainer = document.querySelector('main');
+            mainContainer.scrollTop = 0;
+        }
 
-        // Función de seguridad: Sanitiza cadenas de texto para prevenir DOM-based XSS
         function escapeHTML(str) {
             if (!str) return '';
             return str.replace(/[&<>'"]/g, 
@@ -163,28 +165,26 @@
             );
         }
 
-	async function init() {
-	    // 1. Añadimos un indicador visual antes de pedir los datos
-	    const grid = document.getElementById('albums-grid');
-	    grid.innerHTML = '<p class="text-gray-400 animate-pulse">Scanning music, please wait...</p>';
-	    
-	    try {
-	        const res = await fetch('/api/music');
-	        musicData = await res.json();
-	        
-	        // 2. Limpiamos y renderizamos
-	        grid.innerHTML = ''; 
-	        renderAlbums();
-	        renderSidebar();
-	        
-	        const savedVolume = localStorage.getItem('player-volume') || 0.8;
-	        audioPlayer.volume = savedVolume;
-	        document.getElementById('volume-slider').value = savedVolume;
-	    } catch (err) {
-	        grid.innerHTML = '<p class="text-red-500">Error loading library. Check server status.</p>';
-	        console.error("Error loading library:", err);
-	    }
-	}
+        async function init() {
+            const grid = document.getElementById('albums-grid');
+            grid.innerHTML = '<p class="text-gray-400 animate-pulse">Scanning music, please wait...</p>';
+            
+            try {
+                const res = await fetch('/api/music');
+                musicData = await res.json();
+                
+                grid.innerHTML = ''; 
+                renderAlbums();
+                renderSidebar();
+                
+                const savedVolume = localStorage.getItem('player-volume') || 0.8;
+                audioPlayer.volume = savedVolume;
+                document.getElementById('volume-slider').value = savedVolume;
+            } catch (err) {
+                grid.innerHTML = '<p class="text-red-500">Error loading library. Check server status.</p>';
+                console.error("Error loading library:", err);
+            }
+        }
 
         function changeVolume(event) {
             const vol = event.target.value;
@@ -192,35 +192,45 @@
             localStorage.setItem('player-volume', vol);
         }
 
-    function playAlbumFromSidebar(index) {
-        // 1. Abre la vista del álbum
-        showAlbum(index);
-        
-        // 2. Ejecuta el play de la primera canción
-        // Usamos setTimeout breve para asegurar que la UI haya procesado el showAlbum antes
-        setTimeout(() => {
-            playAlbumFirstTrack(index);
-        }, 50);
-    }
+        function playAlbumFromSidebar(index) {
+            showAlbum(index);
+            setTimeout(() => {
+                playAlbumFirstTrack(index);
+            }, 50);
+        }
 
-	function renderAlbums() {
-	    const grid = document.getElementById('albums-grid');
-	    grid.innerHTML = musicData.map((item, index) => `
-	        <div class="bg-[#181818] p-3 md:p-4 rounded-lg hover:bg-[#282828] transition cursor-pointer group shadow-lg border border-transparent hover:border-gray-800 relative" onclick="showAlbum(${index})">
-	            <div class="relative w-full aspect-square mb-3 md:mb-4 overflow-hidden rounded-md shadow-md">
-	                <img class="w-full h-full object-cover" src="${item.cover}" onerror="this.src='./nocover.jpg'">
-	                
-	                <button onclick="event.stopPropagation(); playAlbumFirstTrack(${index});" 
-	                        class="absolute bottom-2 right-2 w-12 h-12 bg-[#1db954] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-2 group-hover:translate-y-0 text-black shadow-xl hover:scale-105 active:scale-95 cursor-pointer z-10">
-	                    <svg class="w-6 h-6 fill-current ml-1" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-	                </button>
-	            </div>
-	            <h4 class="text-white font-bold text-xs md:text-sm truncate">${escapeHTML(item.album)}</h4>
-	            <p class="text-gray-400 text-[10px] md:text-xs mt-1">${item.tracks.length} tracks</p>
-	        </div>
-	    `).join('');
-	}
+        function renderAlbums() {
+            const grid = document.getElementById('albums-grid');
+            grid.innerHTML = musicData.map((item, index) => `
+                <div class="bg-[#181818] p-3 md:p-4 rounded-lg hover:bg-[#282828] transition cursor-pointer group shadow-lg border border-transparent hover:border-gray-800 relative" onclick="showAlbum(${index})">
+                    <div class="relative w-full aspect-square mb-3 md:mb-4 overflow-hidden rounded-md shadow-md">
+                        <img class="w-full h-full object-cover" src="${item.cover}" onerror="this.src='./nocover.jpg'">
+                        
+                        <button onclick="event.stopPropagation(); playAlbumFirstTrack(${index});" 
+                                class="absolute bottom-2 right-2 w-12 h-12 bg-[#1db954] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-2 group-hover:translate-y-0 text-black shadow-xl hover:scale-105 active:scale-95 cursor-pointer z-10">
+                            <svg class="w-6 h-6 fill-current ml-1" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </button>
+                    </div>
+                    <h4 class="text-white font-bold text-xs md:text-sm truncate">${escapeHTML(item.album)}</h4>
+                    <p class="text-gray-400 text-[10px] md:text-xs mt-1">${item.tracks.length} tracks</p>
+                </div>
+            `).join('');
+        }
 
+        function updateTabTitle(trackTitle, isPlaying) {
+            clearInterval(titleScrollInterval);
+            if (!isPlaying) {
+                document.title = "AZify Player";
+                return;
+            }
+            
+            currentScrollText = `[AZify] - ${trackTitle}       `;
+            
+            titleScrollInterval = setInterval(() => {
+                currentScrollText = currentScrollText.substring(1) + currentScrollText.substring(0, 1);
+                document.title = currentScrollText;
+            }, 350);
+        }
 
         function refreshTracksList(albumIdx) {
             const album = musicData[albumIdx];
@@ -230,7 +240,6 @@
                 const isCurrent = (currentAlbumIdx === albumIdx && currentTrackIdx === trackIdx);
                 const isPlaying = isCurrent && !audioPlayer.paused;
                 
-                // Separamos el nombre base de su extensión (.mp3, .flac, etc.)
                 const match = track.title.match(/^(.*)(\.[^.]+)$/);
                 const baseName = match ? match[1] : track.title;
                 const extension = match ? match[2] : '';
@@ -299,7 +308,9 @@
                 .then(() => updatePlaybackUI(true))
                 .catch(e => console.log("Playback error:", e));
 
-            document.getElementById('current-title').innerText = track.title;
+            // Para el título inferior quitamos la extensión estéticamente
+            const cleanTitle = track.title.replace(/\.[^/.]+$/, "");
+            document.getElementById('current-title').innerText = cleanTitle;
             document.getElementById('current-album').innerText = album.album;
             
             const currentCover = document.getElementById('current-cover');
@@ -318,69 +329,35 @@
             if (albumView.classList.contains('hidden') || currentAlbumIdx !== albumIdx) {
                 showAlbum(albumIdx);
             } else {
-                // Si YA estamos en el álbum, solo refrescamos la lista de tracks 
-                // sin llamar a showAlbum completo (que resetea el scroll)
                 refreshTracksList(albumIdx);
             }
-
         }
 
         function showAlbum(index) {
-                const album = musicData[index];
+            const album = musicData[index];
 
-                document.getElementById('main-view').classList.add('hidden');
-                document.getElementById('album-view').classList.remove('hidden');
+            document.getElementById('main-view').classList.add('hidden');
+            document.getElementById('album-view').classList.remove('hidden');
 
-                if (index !== lastAlbumIndex) {
-                    document.querySelector('main').scrollTop = 0;
-                    lastAlbumIndex = index;
-                }
+            if (index !== lastAlbumIndex) {
+                document.querySelector('main').scrollTop = 0;
+                lastAlbumIndex = index;
+            }
 
-                document.getElementById('view-title').innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <span>${escapeHTML(album.album)}</span>
-                        <button onclick="playAlbumFirstTrack(${index})" 
-                                class="w-10 h-10 bg-[#1db954] rounded-full flex items-center justify-center hover:scale-90 active:scale-80 transition text-black shadow-xl cursor-pointer flex-shrink-0">
-                            <svg class="w-7 h-7 fill-current ml-1" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        </button>
-                    </div>
-                `;
+            document.getElementById('view-title').innerHTML = `
+                <div class="flex items-center gap-4">
+                    <span>${escapeHTML(album.album)}</span>
+                    <button onclick="playAlbumFirstTrack(${index})" 
+                            class="w-10 h-10 bg-[#1db954] rounded-full flex items-center justify-center hover:scale-90 active:scale-80 transition text-black shadow-xl cursor-pointer flex-shrink-0">
+                        <svg class="w-7 h-7 fill-current ml-1" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </button>
+                </div>
+            `;
 
-                document.getElementById('view-cover').src = album.cover;
-                document.getElementById('view-count').innerText = `${album.tracks.length} tracks`;
+            document.getElementById('view-cover').src = album.cover;
+            document.getElementById('view-count').innerText = `${album.tracks.length} tracks`;
 
-                const list = document.getElementById('tracks-list');
-                list.innerHTML = album.tracks.map((track, trackIdx) => {
-                    const isCurrent = (currentAlbumIdx === index && currentTrackIdx === trackIdx);
-                    const isPlaying = isCurrent && !audioPlayer.paused;
-                    
-                    // Separamos el nombre base de su extensión (.mp3, .flac, etc.)
-                    const match = track.title.match(/^(.*)(\.[^.]+)$/);
-                    const baseName = match ? match[1] : track.title;
-                    const extension = match ? match[2] : '';
-
-                    return `
-                    <tr ondblclick="pressTrackRow(${index}, ${trackIdx})"
-                        class="hover:bg-white/5 transition group ${isCurrent ? 'bg-white/5 text-[#1db954]' : ''}">
-                        <td class="p-2 text-center text-gray-500 font-bold text-xs">${trackIdx + 1}</td>
-                        <td class="p-1 text-center">
-                            <button onclick="pressTrackRow(${index}, ${trackIdx})" class="text-gray-400 hover:text-[#1db954] transition cursor-pointer">
-                                ${isPlaying ? 
-                                    `<svg class="w-4 h-4 fill-current text-[#1db954]" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>` : 
-                                    `<svg class="w-4 h-4 fill-current ${isCurrent ? 'text-[#1db954]' : ''}" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`
-                                }
-                            </button>
-                        </td>
-                        <td class="p-2 font-medium ${isCurrent ? 'text-[#1db954]' : 'text-white'}" title="${escapeHTML(track.title)}">
-                            <div class="flex w-full min-w-0">
-                                <span class="truncate">${escapeHTML(baseName)}</span>
-                                <span class="shrink-0 text-gray-400 font-semibold">${escapeHTML(extension)}</span>
-                            </div>
-                        </td>
-                        <td class="p-2 text-center text-gray-400 font-mono text-xs">${escapeHTML(track.duration)}</td>
-                    </tr>
-                    `;
-                }).join('');
+            refreshTracksList(index);
         }
 
         function hideAlbum() {
@@ -412,9 +389,16 @@
             
             renderSidebar();
             
-            const albumView = document.getElementById('album-view');
-            if (!albumView.classList.contains('hidden') && currentAlbumIdx !== -1) {
-                showAlbum(currentAlbumIdx);
+            if (currentAlbumIdx !== -1) {
+                const currentTrack = musicData[currentAlbumIdx].tracks[currentTrackIdx];
+                updateTabTitle(currentTrack.title, isPlaying);
+                
+                const albumView = document.getElementById('album-view');
+                if (!albumView.classList.contains('hidden')) {
+                    refreshTracksList(currentAlbumIdx);
+                }
+            } else {
+                updateTabTitle("", false);
             }
         }
 
@@ -513,7 +497,7 @@
             dataArray = new Uint8Array(analyser.frequencyBinCount);
             ctx = canvas.getContext('2d');
             canvas.width = canvas.offsetWidth;
-            canvas.height = 32; // Adaptado al nuevo tamaño del footer
+            canvas.height = 32;
 
             drawVisualizer();
         }
@@ -543,6 +527,18 @@
                 x += barWidth + 2;
             }
         }
+
+        // Detecta cuando la ventana cambia de tamaño para reactivar el VU-meter si vuelve a ser visible
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('vu-meter');
+            // Si el canvas es visible, tenemos el analizador listo y el contexto activo, relanzamos el bucle
+            if (canvas && canvas.offsetParent !== null && analyser) {
+                // Para evitar duplicar bucles si ya se estaba ejecutando por algún motivo
+                if (audioPlayer && !audioPlayer.paused) {
+                    drawVisualizer();
+                }
+            }
+        });
 
         window.onload = init;
     </script>
