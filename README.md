@@ -1,4 +1,4 @@
-# FIFA Retro Player 🎮🎵
+# FIFA Retro Player 1.0 🎮🎵
 
 Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y ordenadores a baja resolución).
 
