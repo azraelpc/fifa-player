@@ -2,11 +2,9 @@
 
 Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. 
 
-El repo se llama fifa-player porque inicialmente iba a ser para alojar las bandas sonoras de los FIFA pero al final lo he expandido a un web player para cualquier uso.
-
 Soporta los formatos tipicos (mp3, ogg, flac, etc). El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y ordenadores a baja resolución). 2 archivos: Usa el Python para generar el servidor web y el Index.html para el interface.
 
-Puede usarse para cualquier carpeta de musica desde que el Python tenga acceso, mediante la variable MUSIC_DIR del server.py. El archivo Python sirve la web en el puerto 5154, luego yo personalmente lo uso conectando ese peurto a un subdominio de mi web via cloudflare tunnels. Igual me animo a hacer un cliente .apk para Android Auto, con lo que podría sustituir al Subsonic que uso actualmente en el coche.
+Puede usarse para cualquier carpeta de musica desde que el Python tenga acceso, mediante la variable MUSIC_DIR del server.py. El archivo Python sirve la web en el puerto 5155, luego yo personalmente lo uso conectando ese peurto a un subdominio de mi web via cloudflare tunnels. Igual me animo a hacer un cliente .apk para Android Auto, con lo que podría sustituir al Subsonic que uso actualmente en el coche.
 
 Para las portadas, justo a los mp3 debe haber algun archivo de imagen, tomando como prioridad los que tengan nombre como cover.png, front.png (o .jpg).
 
@@ -27,7 +25,7 @@ Para hacerlo sencillo (como si fueran CDs de verdad) la estructura preferible es
 ## Estructura del Proyecto
 
 ```bash
-~/fifa-player/
+~/azify/
 ├── index.html          # Frontend responsivo estructurado con Tailwind CSS
 ├── server.py           # Servidor backend en Python (API y servidor de estáticos)
 └── music/              # ojo: el server.py lee la musica del path de la variable MUSIC_DIR y lo mapea al servidor web en la ruta virtual /music
@@ -63,18 +61,18 @@ pip install mutagen
 
 1. **Crear la estructura de directorios:** (si usas /music, acuerdate de cambiar la variable del patch en el server.py, que yo uso mi /superdisk/...)
    ```bash
-   mkdir -p ~/fifa-player/music
-   cd ~/fifa-player
+   mkdir -p ~/azify/music
+   cd ~/azify
    ```
 
 2. **Asegurar los ficheros en su sitio:**
-   Coloca tu archivo `index.html` y tu script `server.py` dentro de la carpeta raíz `~/fifa-player/`. Copia o crea tu favicon.png si quieres.
+   Coloca tu archivo `index.html` y tu script `server.py` dentro de la carpeta raíz `~/azify-player/`. Copia o crea tu favicon.png si quieres.
 
 3. **Ejecutar manualmente en segundo plano (para pruebas):**
    ```bash
    python3 server.py
    ```
-   El servidor web se levantará en el puerto de red local correspondiente (`5154`). Puedes acceder desde Chrome o Carbonyl usando `http://localhost:5154` o la IP local de tu servidor.
+   El servidor web se levantará en el puerto de red local correspondiente (`5155`). Puedes acceder desde Chrome o Carbonyl usando `http://localhost:5155` o la IP local de tu servidor.
 
 ---
 
@@ -86,7 +84,7 @@ Para asegurar que el reproductor se inicie automáticamente cuando arranque tu s
 Abre la terminal y crea un nuevo archivo de servicio con `nano`:
 
 ```bash
-sudo nano /etc/systemd/system/fifa-player.service
+sudo nano /etc/systemd/system/azify.service
 ```
 
 ### 2. Pegar la siguiente configuración
@@ -100,13 +98,13 @@ After=network.target
 [Service]
 Type=simple
 User=shurmano
-WorkingDirectory=/home/shurmano/fifa-player
-ExecStart=/usr/bin/python3 /home/shurmano/fifa-player/server.py
+WorkingDirectory=/home/shurmano/azify
+ExecStart=/usr/bin/python3 /home/shurmano/azify/server.py
 Restart=always
 RestartSec=5
 StandardOutput=syslog
 StandardError=syslog
-SyslogIdentifier=fifa-player
+SyslogIdentifier=azify
 
 [Install]
 WantedBy=multi-user.target
@@ -120,17 +118,17 @@ Cada vez que creas o modificas un archivo en `/etc/systemd/system/`, debes indic
 sudo systemctl daemon-reload
 
 # Habilitar el servicio para que arranque automáticamente con el sistema
-sudo systemctl enable fifa-player.service
+sudo systemctl enable azify.service
 
 # Iniciar el servicio inmediatamente
-sudo systemctl start fifa-player.service
+sudo systemctl start azify.service
 ```
 
 ### 4. Comprobar el estado del servicio
 Para verificar que el reproductor está funcionando correctamente en segundo plano sin errores:
 
 ```bash
-sudo systemctl status fifa-player.service
+sudo systemctl status azify.service
 ```
 
 Deberías ver un indicador en verde que pone **`active (running)`**.
@@ -143,16 +141,16 @@ Si realizas modificaciones en el código de tu `server.py` o quieres controlar e
 
 - **Detener el reproductor:**
   ```bash
-  sudo systemctl stop fifa-player.service
+  sudo systemctl stop azify.service
   ```
 - **Reiniciar el servicio (aplicar cambios en caliente):**
   ```bash
-  sudo systemctl restart fifa-player.service
+  sudo systemctl restart azify.service
   ```
 - **Ver los logs en tiempo real (Depuración):**
   Si el backend da algún error leyendo carpetas o rutas de canciones, puedes auditar las salidas de consola en vivo con:
   ```bash
-  sudo journalctl -u fifa-player.service -f -n 50
+  sudo journalctl -u azify.service -f -n 50
   ```
 
 ---

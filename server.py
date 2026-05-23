@@ -8,9 +8,9 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote
 
 # --- CONFIGURACIÓN ---
-MUSIC_DIR = "/superdisk/# FIFA/# FIFA DVD"
-PORT = 5154
-LOCK_FILE = "/tmp/fifaplayer.lock"
+MUSIC_DIR = "/superdisk/# AZIFY"
+PORT = 5155
+LOCK_FILE = "/tmp/azify.lock"
 
 AUDIO_EXTS = ('.mp3', '.ogg', '.wav', '.flac', '.m4a')
 IMAGE_NAMES = ('cover.jpg', 'cover.png', 'front.jpg', 'front.png', 'default.jpg')
@@ -70,7 +70,7 @@ def scan_music():
                 if jpg_files:
                     cover = jpg_files[0]
 
-            display_name = album_name if rel_path else "FIFA Soundtrack"
+            display_name = album_name if rel_path else "AZify Album"
             
             tracks_data = []
             for f in audio_files:
