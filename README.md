@@ -1,12 +1,16 @@
-# FIFA Retro Player 1.0 🎮🎵
+# AZify Player 1.0 🎵
 
 Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. 
 
+El repo se llama fifa-player porque inicialmente iba a ser para alojar las bandas sonoras de los FIFA pero al final lo he expandido a un web player para cualquier uso.
+
 Soporta los formatos tipicos (mp3, ogg, flac, etc). El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y ordenadores a baja resolución). 2 archivos: Usa el Python para generar el servidor web y el Index.html para el interface.
 
-Lo he hecho inicialmente para alojar las bandas sonoras de FIFA que tengo en mi disco duro externo (always connected) pero puede usarse para cualquier carpeta de musica, con pequeños ajustes. El archivo Python sirve la web en el puerto 5154, luego lo conecto a un subdominio de mi web via cloudflare tunnels. Igual me animo a hacer un cliente .apk para Android Auto, con lo que podría sustituir al Subsonic que uso actualmente en el coche.
+Puede usarse para cualquier carpeta de musica desde que el Python tenga acceso, mediante la variable MUSIC_DIR del server.py. El archivo Python sirve la web en el puerto 5154, luego yo personalmente lo uso conectando ese peurto a un subdominio de mi web via cloudflare tunnels. Igual me animo a hacer un cliente .apk para Android Auto, con lo que podría sustituir al Subsonic que uso actualmente en el coche.
 
-La ruta de las carpetas de musica están definias en el server.py, variable MUSIC_DIR. Para las portadas, justo a los mp3 debe haber algun archivo de imagen, tomando como prioridad los que tengan nombre como cover.png, front.png (o .jpg). Obviamente los albumes no los subo al github, eso es cosa tuya ;)
+Para las portadas, justo a los mp3 debe haber algun archivo de imagen, tomando como prioridad los que tengan nombre como cover.png, front.png (o .jpg).
+
+Para hacerlo sencillo (como si fueran CDs de verdad) la estructura preferible es un CD por carpeta, con su png/jpg de caratula. Aunque el script busca en todas las subcarpetas de la ruta dada (eg: "/musica/carpeta1/carpeta2/Album Chulo" aparecerá en la lista de CDs como "Album Chulo").
 
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/48af6d5a-5138-4f72-ac83-a1a14995e4e5" />
 
@@ -90,7 +94,7 @@ sudo nano /etc/systemd/system/fifa-player.service
 
 ```ini
 [Unit]
-Description=Servidor Backend de FIFA Retro Player
+Description=Servidor Backend de Azify Player
 After=network.target
 
 [Service]
