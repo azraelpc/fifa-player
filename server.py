@@ -4,7 +4,7 @@ import sys
 import fcntl
 import struct
 import re
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from urllib.parse import unquote
 
 # --- CONFIGURACIÓN ---
@@ -149,6 +149,8 @@ class MusicServerHandler(BaseHTTPRequestHandler):
                         self.manejar_fichero_audio(full_path)
                     else:
                         self.send_response(200)
+                        # Le dice al navegador que guarde la portada en caché durante 1 día (86400 segundos)
+                        self.send_header('Cache-Control', 'public, max-age=86400')
                         self.end_headers()
                         with open(full_path, 'rb') as f: 
                             self.wfile.write(f.read())
@@ -187,5 +189,6 @@ def actualizar_biblioteca():
 if __name__ == '__main__':
     evitar_doble_ejecucion()
     actualizar_biblioteca() # Escaneamos ANTES de arrancar
-    server = HTTPServer(('0.0.0.0', PORT), MusicServerHandler)
+    # Cambio HTTPServer por ThreadingHTTPServer para multithread
+    server = ThreadingHTTPServer(('0.0.0.0', PORT), MusicServerHandler)
     server.serve_forever()
