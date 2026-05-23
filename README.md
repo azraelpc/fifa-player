@@ -2,44 +2,44 @@
 
 <img height="50" alt="{939BC6ED-591F-452B-8653-628985BE4F13}" src="https://github.com/user-attachments/assets/7491c8ad-eccd-491d-9e59-1efcbcaf90b4" />
 
-Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. Sirve por defecto en el puerto 5155.
+Lightweight and responsive web music player inspired by the classic Spotify interface. Serves by default on port 5155.
 
-Soporta los formatos tipicos (mp3, ogg, flac, etc). El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y ordenadores a baja resolución). 
+Supports typical formats (mp3, ogg, flac, etc). The project includes a dynamic Python backend and a modern, elastic frontend with Tailwind CSS that adapts perfectly to any resolution (including mobile environments and low-resolution computers).
 
 <img width="750" alt="{E06B8978-8656-4CC8-9D2E-7199131390B2}" src="https://github.com/user-attachments/assets/31cf9b32-09e1-4fa6-9dc0-9062a5390681" />
 
-Solo necesita 2 archivos: Python para generar el servidor web y Index.html para el interface. Tambien 2 imagenes (favicon y fallback para no-cover).
+It only needs 2 files: Python to generate the web server and Index.html for the interface. Also 2 images (favicon and fallback for no-cover).
 
-Puede usarse para cualquier carpeta de musica desde que el Python tenga acceso, mediante la variable MUSIC_DIR del server.py. El archivo Python sirve la web en el puerto 5155, luego yo personalmente lo uso conectando ese peurto a un subdominio de mi web via cloudflare tunnels. Igual me animo a hacer un cliente .apk para Android Auto, con lo que podría sustituir al Subsonic que uso actualmente en el coche.
+It can be used for any music folder as long as Python has access to it, through the `MUSIC_DIR` variable in `server.py`. The Python file serves the web on port 5155, then I personally use Cloudflare Tunnels to connect that port to a subdomain of my website. I might even end up making an Android Auto `.apk` client, which could replace the Subsonic setup I currently use in the car.
 
-Para las portadas, justo a los mp3 debe haber algun archivo de imagen, tomando como prioridad los que tengan nombre como cover.png, front.png (o .jpg). Si no encuentra, muestra el nocover.jpg.
+For album covers, there should be an image file next to the mp3s, prioritizing names like `cover.png`, `front.png` (or `.jpg`). If none is found, it shows `nocover.jpg`.
 
-Para hacerlo sencillo (como si fueran CDs de verdad) la estructura preferible es un CD por carpeta, con su png/jpg de caratula. Aunque el script busca en todas las subcarpetas de la ruta dada (eg: "/musica/carpeta1/carpeta2/Album Chulo" aparecerá en la lista de CDs como "Album Chulo").
+To keep it simple (like real CDs), the preferred structure is one CD per folder, with its png/jpg cover art. Although the script scans all subfolders inside the given path (eg: `"/music/folder1/folder2/Cool Album"` will appear in the CD list as `"Cool Album"`).
 
-## Características principales 
+## Main Features
 
-- **Interfaz Clon de Spotify:** Diseño oscuro elegante con transiciones suaves, barras de progreso interactivas y control de volumen visual.
-- **Barra Lateral Inteligente con Scroll Independiente:** El menú lateral calcula dinámicamente el espacio restante para evitar colisiones con el reproductor inferior en pantallas de baja resolución (como portátiles o monitores antiguos), ofreciendo scroll interno autónomo.
-- **Indicador de Álbum Activo:** El álbum que se está reproduciendo actualmente se ilumina en verde Spotify (`#1db954`) en la barra lateral con un sutil indicador de borde izquierdo.
-- **Diseño 100% Responsivo:** Grid de álbumes adaptativo (de 2 columnas en móvil a 5 en pantallas grandes) y colapso automatizado de elementos secundarios (como el VU-Meter o las carátulas secundarias) en pantallas estrechas.
-- **Salto Continuo Automático:** Reproducción ininterrumpida que pasa automáticamente al siguiente tema de la lista y salta al siguiente juego (álbum) al terminar el disco actual.
-- **Visualizador de Audio (VU-Meter):** Renderizado dinámico en un componente Canvas HTML5 utilizando la API de Audio Context de JavaScript (oculto de forma inteligente en dispositivos móviles para optimizar rendimiento).
-- **Normalizacion de Volumen:** Al venir los CDS/Singles de diferentes fuentes seguramente, aplicamos compresor/normalizacion de volumen para mitigar canciones grabadas a bajo volumen y evitar saltos.
-- **Backend Fluido:** Servidor de archivos ligero implementado en Python que escanea automáticamente el directorio de música, extrae las pistas y expone un endpoint JSON robusto.
-- **Protección de Acceso Ultra-Simple:** Control de acceso opcional mediante barrera de autenticación integrada. Si el sistema detecta un archivo de clave (pass.txt), bloquea la API y la música, desplegando un frontend interactivo en 3D (Three.js) para ingresar la contraseña.
+- **Spotify Clone Interface:** Elegant dark design with smooth transitions, interactive progress bars, and visual volume control.
+- **Smart Sidebar with Independent Scroll:** The sidebar dynamically calculates remaining space to avoid collisions with the bottom player on low-resolution screens (such as laptops or old monitors), providing its own autonomous internal scrolling.
+- **Active Album Indicator:** The album currently playing lights up in Spotify green (`#1db954`) in the sidebar with a subtle left border indicator.
+- **100% Responsive Design:** Adaptive album grid (from 2 columns on mobile up to 5 on large screens) and automatic collapsing of secondary elements (such as the VU-Meter or secondary covers) on narrow displays.
+- **Automatic Continuous Playback:** Seamless playback that automatically jumps to the next track in the list and then to the next set (album) when the current disc ends.
+- **Audio Visualizer (VU-Meter):** Dynamic rendering in an HTML5 Canvas component using the JavaScript Audio Context API (intelligently hidden on mobile devices to optimize performance).
+- **Volume Normalization:** Since CDs/Singles may come from different sources, a compressor/volume normalization system is applied to mitigate tracks recorded at low volume and avoid sudden jumps.
+- **Smooth Backend:** Lightweight file server implemented in Python that automatically scans the music directory, extracts tracks, and exposes a robust JSON endpoint.
+- **Ultra-Simple Access Protection:** Optional access control through an integrated authentication barrier. If the system detects a key file (`pass.txt`), it blocks the API and music access, deploying an interactive 3D frontend (Three.js) to enter the password.
 
-## Estructura del Proyecto
+## Project Structure
 
 ```bash
 ~/azify/
-├── index.html          # Frontend responsivo estructurado con Tailwind CSS
-├── server.py           # Servidor backend en Python (API y servidor de estáticos)
-├── favicon.png         # Icono del website para navegador/bookmarks
-├── nocover.jpg         # CD Cover que muestra cuando no encuentra ninguna imagen en la carpeta del album
-├── server.py           # Servidor backend en Python (API y servidor de estáticos)
-├── pass.txt            # (Opcional) Archivo de texto plano con la contraseña de acceso web
-└── music/              # ojo: el server.py lee la musica del path de la variable MUSIC_DIR y lo mapea al servidor web en la ruta virtual "/music"
-    ├── FIFA 98/        
+├── index.html          # Responsive frontend structured with Tailwind CSS
+├── server.py           # Python backend server (API and static file server)
+├── favicon.png         # Website icon for browser/bookmarks
+├── nocover.jpg         # CD cover displayed when no image is found in the album folder
+├── server.py           # Python backend server (API and static file server)
+├── pass.txt            # (Optional) Plain text file containing the web access password
+└── music/              # note: server.py reads music from the MUSIC_DIR variable path and maps it to the virtual web route "/music"
+    ├── FIFA 98/
     │   ├── cover.jpg
     │   └── track1.mp3
     └── FIFA 2004/
@@ -49,16 +49,17 @@ Para hacerlo sencillo (como si fueran CDs de verdad) la estructura preferible es
 
 ---
 
-## Requisitos Previos
+## Prerequisites
 
-El sistema está optimizado para funcionar en **Ubuntu** (probado en Ubuntu 22.04 / 24.04 LTS) y requiere Python 3 instalado en el sistema:
+The system is optimized to run on **Ubuntu** (tested on Ubuntu 22.04 / 24.04 LTS) and requires Python 3 installed on the system:
 
 ```bash
 sudo apt update
 sudo apt install python3 python3-pip -y
 ```
 
-...y tambien instalar la libreria **mutagen** (para que detecte cual es la duracion de las pistas). 
+...and also install the **mutagen** library (so it can detect track durations).
+
 ```bash
 sudo apt install python3 python3-pip -y
 pip install mutagen
@@ -66,42 +67,42 @@ pip install mutagen
 
 ---
 
-## Instalación y Despliegue Local
+## Installation and Local Deployment
 
-1. **Crear la estructura de directorios:** (Recuerda! si usas /music, acuerdate de cambiar la variable del path (MUSIC_DIC) en el server.py, que yo uso mi /superdisk/...)
+1. **Create the directory structure:** (Remember! if you use `/music`, don’t forget to change the path variable (`MUSIC_DIR`) inside `server.py`, since I personally use my `/superdisk/...`)
    ```bash
    mkdir -p ~/azify/music
    cd ~/azify
    ```
 
-2. **Asegurar los ficheros en su sitio:**
-   Coloca tu archivo `index.html` y tu script `server.py` dentro de la carpeta raíz `~/azify-player/`. Copia o crea tu favicon.png si quieres.
+2. **Make sure the files are in place:**
+   Place your `index.html` file and your `server.py` script inside the root folder `~/azify-player/`. Copy or create your `favicon.png` if you want.
 
-3. **Ejecutar manualmente en segundo plano (para pruebas):**
+3. **Run manually in the background (for testing):**
    ```bash
    python3 server.py
    ```
-   El servidor web se levantará en el puerto de red local correspondiente (`5155`). Puedes acceder desde Chrome o Carbonyl usando `http://localhost:5155` o la IP local de tu servidor.
+   The web server will start on the corresponding local network port (`5155`). You can access it from Chrome or Carbonyl using `http://localhost:5155` or your server’s local IP.
 
 ---
 
-## Configuración como Servicio del Sistema en Ubuntu (`systemd`)
+## Ubuntu System Service Configuration (`systemd`)
 
-Para asegurar que el reproductor se inicie automáticamente cuando arranque tu servidor Ubuntu, se ejecute en segundo plano de manera persistente y se reinicie solo si hay algún fallo, configuraremos un servicio de `systemd`.
+To ensure the player starts automatically when your Ubuntu server boots, runs persistently in the background, and restarts automatically if something fails, we’ll configure a `systemd` service.
 
-### 1. Crear el archivo de configuración del servicio
-Abre la terminal y crea un nuevo archivo de servicio con `nano`:
+### 1. Create the service configuration file
+Open the terminal and create a new service file with `nano`:
 
 ```bash
 sudo nano /etc/systemd/system/azify.service
 ```
 
-### 2. Pegar la siguiente configuración
-*Nota: Asegúrate de reemplazar `shurmano` por tu nombre de usuario exacto de Ubuntu en las rutas correspondientes si utilizas otro diferente.*
+### 2. Paste the following configuration
+*Note: Make sure to replace `shurmano` with your exact Ubuntu username in the paths if you use a different one.*
 
 ```ini
 [Unit]
-Description=Servidor Backend de Azify Player
+Description=Azify Player Backend Server
 After=network.target
 
 [Service]
@@ -119,77 +120,85 @@ SyslogIdentifier=azify
 WantedBy=multi-user.target
 ```
 
-### 3. Recargar el demonio de systemd y arrancar el servicio
-Cada vez que creas o modificas un archivo en `/etc/systemd/system/`, debes indicarle al sistema que actualice sus registros internos:
+### 3. Reload the systemd daemon and start the service
+Every time you create or modify a file inside `/etc/systemd/system/`, you must tell the system to refresh its internal records:
 
 ```bash
-# Recargar el gestor de servicios
+# Reload the service manager
 sudo systemctl daemon-reload
 
-# Habilitar el servicio para que arranque automáticamente con el sistema
+# Enable the service so it starts automatically with the system
 sudo systemctl enable azify.service
 
-# Iniciar el servicio inmediatamente
+# Start the service immediately
 sudo systemctl start azify.service
 ```
 
-### 4. Comprobar el estado del servicio
-Para verificar que el reproductor está funcionando correctamente en segundo plano sin errores:
+### 4. Check the service status
+To verify that the player is running correctly in the background without errors:
 
 ```bash
 sudo systemctl status azify.service
 ```
 
-Deberías ver un indicador en verde que pone **`active (running)`**.
+You should see a green **`active (running)`** indicator.
 
 ---
 
-## Comandos Útiles de Administración
+## Useful Administration Commands
 
-Si realizas modificaciones en el código de tu `server.py` o quieres controlar el ciclo de vida del proceso, utiliza los siguientes comandos estándar:
+If you make modifications to your `server.py` code or want to control the process lifecycle, use the following standard commands:
 
-- **Detener el reproductor:**
+- **Stop the player:**
   ```bash
   sudo systemctl stop azify.service
   ```
-- **Reiniciar el servicio (aplicar cambios en caliente):**
+
+- **Restart the service (apply hot changes):**
   ```bash
   sudo systemctl restart azify.service
   ```
-- **Ver los logs en tiempo real (Depuración):**
-  Si el backend da algún error leyendo carpetas o rutas de canciones, puedes auditar las salidas de consola en vivo con:
+
+- **View logs in real time (Debugging):**
+  If the backend throws errors while reading folders or song paths, you can inspect the live console output with:
+
   ```bash
   sudo journalctl -u azify.service -f -n 50
   ```
 
 ---
 
-## Control de Acceso y Seguridad
+## Access Control and Security
 
-El reproductor incluye un sistema de bloqueo nativo muy fácil de gestionar sin necesidad de bases de datos ni cookies complejas:
+The player includes a very easy-to-manage native locking system without databases or complex cookies:
 
-### ¿Cómo activar la contraseña?
-Solo tienes que crear un archivo llamado `pass.txt` en la misma carpeta raíz donde se encuentra el script `server.py` y escribir tu contraseña dentro (en una sola línea y limpia de espacios):
+### How to enable the password?
+You only need to create a file called `pass.txt` in the same root folder where the `server.py` script is located and write your password inside (single clean line without spaces):
 
 ```bash
 echo "G3l1p011a5" > pass.txt
 ```
 
-La próxima vez que accedas a la web (o si el almacenamiento local expira), el servidor interceptará las peticiones y cargará una pantalla de bloqueo con un fondo animado en Three.js. 
-La contraseña se almacena de forma segura en el localStorage de tu navegador (azpwd) y se envía al servidor mediante cabeceras HTTP personalizadas (X-Azify-Pass).
+The next time you access the website (or when local storage expires), the server will intercept requests and load a lock screen with an animated Three.js background.
 
-### ¿Cómo quitar la contraseña?
-Para volver a hacer la web 100% pública y de libre acceso, simplemente elimina el archivo desde la terminal de tu servidor: rm pass.txt
+The password (the hash, obviously, i'm not like the password above) is securely stored in your browser’s localStorage (`azpwd`) and sent to the server using custom HTTP headers (`X-Azify-Pass`).
 
-Nota de seguridad: El servidor web en Python tiene una valla estricta que bloquea explícitamente cualquier petición directa a http://tu-ip:5155/pass.txt, por lo que el archivo es totalmente invisible e inaccesible desde el exterior. El archivo pass.txt ha sido añadido al .gitignore para evitar filtraciones accidentales en repositorios públicos.
+### How to remove the password?
+To make the website 100% public and freely accessible again, simply delete the file from your server terminal:
 
-## Contribuciones y Notas de Desarrollo
+```bash
+rm pass.txt
+```
 
-- **Limpieza de Caché:** Al realizar ajustes pesados en el frontend (`index.html`), se recomienda refrescar el navegador cliente utilizando el atajo **`Ctrl + F5`** para forzar la recarga de scripts y estilos interpretados por Tailwind.
-- **Rendimiento Móvil:** Las propiedades de visualización CSS eluden los cálculos pesados de renderizado del canvas gráfico en resoluciones inferiores a los puntos de ruptura móviles para mitigar el drenaje excesivo de batería en terminales portátiles.
+Security note: The Python web server includes a strict guard that explicitly blocks any direct request to `http://your-ip:5155/pass.txt`, so the file is completely invisible and inaccessible from outside. The `pass.txt` file has also been added to `.gitignore` to avoid accidental leaks in public repositories.
 
-- **IA:** Usado Gemini AI plus para acelerar el desarrollo de la web.
+## Contributions and Development Notes
+
+- **Cache Cleaning:** When making heavy frontend changes (`index.html`), it is recommended to refresh the client browser using the shortcut **`Ctrl + F5`** to force reload interpreted Tailwind scripts and styles.
+- **Mobile Performance:** CSS display properties bypass heavy canvas rendering calculations at resolutions below mobile breakpoints to mitigate excessive battery drain on portable devices.
+
+- **AI:** Used Gemini AI Plus to accelerate web development.
 
 ## ToDo / Known Issues
 
-- "Duration" en WAV/FLAC muchas veces no es nada preciso, necesito mejorarlo. En MP3 parece ir bien, y todos los formatos aparece bien durante su reproducción abajo.
+- `"Duration"` in WAV/FLAC is often not very accurate, I need to improve it. In MP3 it seems fine, and during playback all formats display correctly at the bottom.
