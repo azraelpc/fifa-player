@@ -181,7 +181,7 @@ La contraseña se almacena de forma segura en el localStorage de tu navegador (a
 ### ¿Cómo quitar la contraseña?
 Para volver a hacer la web 100% pública y de libre acceso, simplemente elimina el archivo desde la terminal de tu servidor: rm pass.txt
 
-### Nota de seguridad: El servidor web en Python tiene una valla estricta que bloquea explícitamente cualquier petición directa a http://tu-ip:5155/pass.txt, por lo que el archivo es totalmente invisible e inaccesible desde el exterior. El archivo pass.txt ha sido añadido al .gitignore para evitar filtraciones accidentales en repositorios públicos.
+Nota de seguridad: El servidor web en Python tiene una valla estricta que bloquea explícitamente cualquier petición directa a http://tu-ip:5155/pass.txt, por lo que el archivo es totalmente invisible e inaccesible desde el exterior. El archivo pass.txt ha sido añadido al .gitignore para evitar filtraciones accidentales en repositorios públicos.
 
 ## Contribuciones y Notas de Desarrollo
 
