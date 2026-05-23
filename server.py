@@ -52,7 +52,12 @@ def scan_music():
         if album_name.lower() in IGNORED_DIRS:
             continue
             
-        audio_files = sorted([f for f in files if f.lower().endswith(AUDIO_EXTS)])
+        def orden_natural(texto):
+            # Divide el nombre en partes de texto y partes numéricas enteras
+            return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', texto)]
+
+        audio_files = [f for f in files if f.lower().endswith(AUDIO_EXTS)]
+        audio_files.sort(key=orden_natural)
         
         if audio_files:
             rel_path = os.path.relpath(root, MUSIC_DIR)
