@@ -32,7 +32,7 @@
                 <span>FIFA RetroPlayer</span>
             </div>            
             <div class="flex flex-col gap-4 text-gray-400 font-bold text-sm flex-shrink-0">
-		<a href="#" onclick="showHome()" class="hover:text-white flex items-center gap-3 text-white transition">Home</a>
+		<a href="javascript:void(0)" onclick="showHome()" class="hover:text-white flex items-center gap-3 text-white transition">Home</a>
                 <button onclick="playAll()" class="hover:text-white flex items-center gap-3 transition text-left cursor-pointer w-full">Play All</button>
                 <div class="border-t border-gray-800 my-1"></div>
                 <p class="text-xs uppercase tracking-wider text-gray-500 font-black">Your Library</p>
@@ -208,7 +208,7 @@
                 const isCurrentAlbum = (currentAlbumIdx === index);
                 const safeAlbum = escapeHTML(item.album);
                 return `
-                <a href="#" onclick="showAlbum(${index})" class="transition py-0.5 text-xs block tracking-tight whitespace-nowrap overflow-visible text-left border-l-2 pl-2 ${
+                <a href="javascript:void(0)" onclick="showAlbum(${index})" class="transition py-0.5 text-xs block tracking-tight whitespace-nowrap overflow-visible text-left border-l-2 pl-2 ${
                     isCurrentAlbum 
                         ? 'text-[#1db954] font-bold border-[#1db954]' 
                         : 'text-gray-400 hover:text-white border-transparent'
