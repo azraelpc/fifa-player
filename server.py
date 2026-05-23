@@ -132,14 +132,14 @@ class MusicServerHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
             # --- Añadir esto al principio de do_GET ---
+
             if os.path.exists(PASS_FILE):
                 with open(PASS_FILE, 'r', encoding='utf-8') as f:
-                    valid_pass = f.read().strip()
+                    valid_hash = f.read().strip().lower() # Forzamos minúsculas por seguridad
                 
-                # Leemos la clave que envía el navegador en las cabeceras
-                user_pass = self.headers.get('X-Azify-Pass', '')
+                user_hash = self.headers.get('X-Azify-Pass', '').lower()
                 
-                if user_pass != valid_pass:
+                if user_hash != valid_hash:
                     # Si no coincide y pide la API o música, bloqueamos
                     if self.path.startswith('/api/') or self.path.startswith('/music/'):
                         self.send_error(401)
