@@ -22,6 +22,7 @@ Para hacerlo sencillo (como si fueran CDs de verdad) la estructura preferible es
 - **Diseño 100% Responsivo:** Grid de álbumes adaptativo (de 2 columnas en móvil a 5 en pantallas grandes) y colapso automatizado de elementos secundarios (como el VU-Meter o las carátulas secundarias) en pantallas estrechas.
 - **Salto Continuo Automático:** Reproducción ininterrumpida que pasa automáticamente al siguiente tema de la lista y salta al siguiente juego (álbum) al terminar el disco actual.
 - **Visualizador de Audio (VU-Meter):** Renderizado dinámico en un componente Canvas HTML5 utilizando la API de Audio Context de JavaScript (oculto de forma inteligente en dispositivos móviles para optimizar rendimiento).
+- **Normalizacion de Volumen:** Al venir los CDS/Singles de diferentes fuentes seguramente, aplicamos compresor/normalizacion de volumen para mitigar canciones grabadas a bajo volumen y evitar saltos.
 - **Backend Fluido:** Servidor de archivos ligero implementado en Python que escanea automáticamente el directorio de música, extrae las pistas y expone un endpoint JSON robusto.
 
 ## Estructura del Proyecto
