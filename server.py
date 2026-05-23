@@ -4,10 +4,11 @@ import sys
 import fcntl
 import struct
 import re
+import hashlib
 from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from urllib.parse import unquote
 
-# --- CONFIGURACIÓN ---
+# --- CONFIGURACION ---
 MUSIC_DIR = "/superdisk/# AZIFY"
 PORT = 5155
 LOCK_FILE = "/tmp/azify.lock"
@@ -54,7 +55,6 @@ def scan_music():
             continue
             
         def orden_natural(texto):
-            # Divide el nombre en partes de texto y partes numéricas enteras
             return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', texto)]
 
         audio_files = [f for f in files if f.lower().endswith(AUDIO_EXTS)]
@@ -81,10 +81,8 @@ def scan_music():
             tracks_data = []
             for f in audio_files:
                 full_track_path = os.path.join(root, f)
-                # Escapamos el # para que el navegador no lo corte
                 file_url = f"/music/{rel_path}/{f}".replace("#", "%23")
                 
-                # Nombre con extensión incluido
                 tracks_data.append({
                     "title": f, 
                     "file": file_url,
@@ -131,133 +129,143 @@ class MusicServerHandler(BaseHTTPRequestHandler):
     
     def do_GET(self):
         try:
-            # --- Añadir esto al principio de do_GET ---
+            # 1. VALIDACIÓN DE CREDENCIALES (Detectamos si la seguridad está activa)
+            seguridad_activa = os.path.exists(PASS_FILE)
+            valid_hash = ""
+            if seguridad_activa:
+                with open(PASS_FILE, 'r', encoding='utf-8-sig') as f:
+                    plain_password = f.read().replace('\n', '').replace('\r', '').strip()
+                valid_hash = hashlib.sha256(plain_password.encode('utf-8')).hexdigest().lower()
 
-            if os.path.exists(PASS_FILE):
-                with open(PASS_FILE, 'r', encoding='utf-8') as f:
-                    valid_hash = f.read().strip().lower() # Forzamos minúsculas por seguridad
+            user_hash = self.headers.get('X-Azify-Pass', '').lower()
+            if not user_hash and seguridad_activa:
+                cookie_header = self.headers.get('Cookie', '')
+                match_cookie = re.search(r'azpwd=([a-fA-F0-9]{64})', cookie_header)
+                if match_cookie:
+                    user_hash = match_cookie.group(1).lower()
+
+            # 2. CAPAR ACCESO DIRECTO A PASS.TXT
+            if os.path.basename(self.path) == "pass.txt":
+                self.send_error(403)
+                return
+
+            # 3. FILTRO DE PROTECCIÓN PARA LA API Y LA MÚSICA (Solo si la seguridad está activa)
+            es_peticion_critica = self.path.startswith('/api/') or self.path.startswith('/music/')
+            if seguridad_activa and es_peticion_critica and (user_hash != valid_hash):
+                self.send_error(401)
+                return
+
+            # 4. ENRUTADO DE PETICIONES AUTORIZADAS / INTERFAZ
+            # Evitamos que el favicon active la pantalla de bloqueo
+            es_favicon = self.path.endswith('favicon.ico')
+
+            # Solo mostramos la pantalla de bloqueo si la seguridad está activa y el usuario no se ha validado
+            if seguridad_activa and (self.path == '/' or self.path == '/index.html') and (user_hash != valid_hash) and not es_favicon:
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.end_headers()
+
+                lock_html = '''
+                <!DOCTYPE html><html style="background-color: #0c0c0c !important;"><head><meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                <title>AZify Lock</title>
+                <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+                <style>
+                    html, body { background-color: #0c0c0c !important; height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; }
+                    #canvas-container { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 0; overflow: hidden; background-color: #0c0c0c; }
+                    @media screen and (max-width: 768px) { input[type="password"] { font-size: 16px !important; } }
+                </style>
+                </head>
+                <body class="bg-[#0c0c0c] flex h-screen w-screen items-center justify-center font-mono overflow-hidden select-none">
                 
-                user_hash = self.headers.get('X-Azify-Pass', '').lower()
-                
-                if user_hash != valid_hash:
-                    # Si no coincide y pide la API o música, bloqueamos
-                    if self.path.startswith('/api/') or self.path.startswith('/music/'):
-                        self.send_error(401)
-                        return
+                <div id="canvas-container"></div>
+
+                <div class="relative z-10 bg-black/60 p-6 sm:p-8 rounded-2xl border border-white/10 text-center shadow-2xl max-w-xs w-full backdrop-blur-md mx-4 box-border">
+                    <h2 class="text-xl font-black text-white mb-1 tracking-tight">Welcome to AZify</h2>
+                    <p class="text-[11px] text-gray-400 mb-5">This AZify is private.<br>Please enter the password.</p>
                     
-                    # Si pide la web, le servimos la pantalla de bloqueo integrada
-                    self.send_response(200)
-                    self.send_header('Content-Type', 'text/html; charset=utf-8')
-                    self.end_headers()
 
-                    lock_html = '''
-                    <!DOCTYPE html><html><head><meta charset="UTF-8"><title>AZify Lock</title>
-                    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-                    <!-- Cargamos Three.js desde CDN -->
-                    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+                    <input type="text" id="p" name="azify-token" autocomplete="off" placeholder="Password" onkeydown="if(event.key==='Enter') document.getElementById('btn-in').click()" class="w-full bg-neutral-900/80 border border-neutral-800 rounded-lg px-3 py-2.5 text-white text-center mb-4 focus:outline-none focus:border-[#1db954] font-bold transition-all box-border style-security">
+
                     <style>
-                        #canvas-container { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 0; overflow: hidden; }
-                        /* Asegura que el input no haga zoom automático molesto en iOS */
-                        @media screen and (max-width: 768px) { input[type="password"] { font-size: 16px !important; } }
+                        /* Forzamos el ocultado de caracteres estilo password en un input de texto plano */
+                        .style-security {
+                            -webkit-text-security: disc !important;
+                            text-security: disc !important;
+                        }
                     </style>
-                    </head>
-                    <body class="bg-[#0c0c0c] flex h-screen items-center justify-center font-mono overflow-hidden select-none">
+
+                    <button id="btn-in" onclick="const btn=this; btn.disabled=true; btn.innerText='Signing in...'; btn.style.opacity='0.7'; const p=document.getElementById('p').value.trim(); const msgBuffer=new TextEncoder().encode(p); crypto.subtle.digest('SHA-256', msgBuffer).then(hashBuffer=>{const hashArray=Array.from(new Uint8Array(hashBuffer)); const hashHex=hashArray.map(b=>b.toString(16).padStart(2,'0')).join(''); localStorage.setItem('azpwd', hashHex); document.cookie = 'azpwd=' + hashHex + '; path=/; max-age=31536000; SameSite=Strict'; location.reload();});" class="w-full bg-[#1db954] text-black font-bold py-2 rounded hover:bg-[#1ed760] transition cursor-pointer box-border">Sign in</button>
                     
-                    <!-- Contenedor para el lienzo de Three.js -->
-                    <div id="canvas-container"></div>
+                </div>
 
-                    <!-- Cuadro de Login flotante -->
-                    <div class="relative z-10 bg-black/60 p-8 rounded-2xl border border-white/10 text-center shadow-2xl max-w-xs w-full backdrop-blur-md mx-4">
-                        <h2 class="text-xl font-black text-white mb-1 tracking-tight">Welcome to AZify</h2>
-                        <p class="text-[11px] text-gray-400 mb-5">This AZify is private.<br>Please enter the password.</p>
-                        
-                        <input type="password" id="p" placeholder="Password" onkeydown="if(event.key==='Enter') document.getElementById('btn-in').click()" class="w-full bg-neutral-900/80 border border-neutral-800 rounded-lg px-3 py-2.5 text-white text-center mb-4 focus:outline-none focus:border-[#1db954] font-bold transition-all">
-                        
-                        <button id="btn-in" onclick="localStorage.setItem('azpwd', document.getElementById('p').value); location.reload();" class="w-full bg-[#1db954] text-black font-black py-2.5 rounded-lg hover:bg-[#1ed760] transition transform active:scale-95 cursor-pointer">Sign in</button>
-                    </div>
-
-                    <script>
-                        // --- Configuración de Three.js (Efecto de partículas sutiles) ---
-                        const container = document.getElementById('canvas-container');
-                        const scene = new THREE.Scene();
-                        scene.background = new THREE.Color(0x0c0c0c);
-
-                        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
-                        camera.position.z = 100;
-
-                        const renderer = new THREE.WebGLRenderer({ antialias: true });
-                        renderer.setSize(window.innerWidth, window.innerHeight);
-                        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimización para pantallas Retina/Móviles
-                        container.appendChild(renderer.domElement);
-
-                        // Crear campo de partículas (estrellas/nodos)
-                        const particlesCount = window.innerWidth < 768 ? 400 : 900; // Menos partículas en móvil para mejor rendimiento
-                        const geometry = new THREE.BufferGeometry();
-                        const positions = new Float32Array(particlesCount * 3);
-
-                        for(let i = 0; i < particlesCount * 3; i += 3) {
-                            positions[i] = (Math.random() - 0.5) * 300;     // X
-                            positions[i+1] = (Math.random() - 0.5) * 300;   // Y
-                            positions[i+2] = (Math.random() - 0.5) * 200;   // Z
+                <script>
+                    const container = document.getElementById('canvas-container');
+                    const scene = new THREE.Scene();
+                    scene.background = new THREE.Color(0x0c0c0c);
+                    
+                    let width = window.innerWidth;
+                    let height = window.innerHeight;
+                    
+                    const camera = new THREE.PerspectiveCamera(60, width / height, 1, 1000);
+                    camera.position.z = 100;
+                    
+                    const renderer = new THREE.WebGLRenderer({ antialias: true });
+                    renderer.setSize(width, height);
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                    container.appendChild(renderer.domElement);
+                    
+                    const particlesCount = width < 768 ? 400 : 900;
+                    const geometry = new THREE.BufferGeometry();
+                    const positions = new Float32Array(particlesCount * 3);
+                    for(let i = 0; i < particlesCount * 3; i += 3) {
+                        positions[i] = (Math.random() - 0.5) * 300;
+                        positions[i+1] = (Math.random() - 0.5) * 300;
+                        positions[i+2] = (Math.random() - 0.5) * 200;
+                    }
+                    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                    const material = new THREE.PointsMaterial({
+                        color: 0x1db954, size: width < 768 ? 2.2 : 1.8,
+                        transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending
+                    });
+                    const particleSystem = new THREE.Points(geometry, material);
+                    scene.add(particleSystem);
+                    
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        const time = Date.now() * 0.00015;
+                        particleSystem.rotation.y = time;
+                        particleSystem.rotation.x = time * 0.5;
+                        const positions = geometry.attributes.position.array;
+                        for (let i = 1; i < positions.length; i += 3) {
+                            positions[i] += Math.sin(time + i) * 0.03;
                         }
+                        geometry.attributes.position.needsUpdate = true;
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+                    
+                    window.addEventListener('resize', () => {
+                        width = window.innerWidth;
+                        height = window.innerHeight;
+                        camera.aspect = width / height;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(width, height);
+                    });
+                </script>
+                </body></html>
+                '''
 
-                        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                self.wfile.write(lock_html.encode('utf-8'))
+                return
 
-                        // Material en forma de puntos verdes difuminados sutiles
-                        const material = new THREE.PointsMaterial({
-                            color: 0x1db954,
-                            size: window.innerWidth < 768 ? 2.5 : 1.8,
-                            transparent: true,
-                            opacity: 0.45,
-                            blending: THREE.AdditiveBlending
-                        });
-
-                        const particleSystem = new THREE.Points(geometry, material);
-                        scene.add(particleSystem);
-
-                        // Animación en bucle
-                        function animate() {
-                            requestAnimationFrame(animate);
-                            
-                            const time = Date.now() * 0.00015;
-                            
-                            // Rotación lenta y sutil en dos ejes
-                            particleSystem.rotation.y = time;
-                            particleSystem.rotation.x = time * 0.5;
-                            
-                            // Ondulación interna muy leve simulando un espacio vivo
-                            const positions = geometry.attributes.position.array;
-                            for (let i = 1; i < positions.length; i += 3) {
-                                positions[i] += Math.sin(time + i) * 0.03; // Movimiento vertical sutil
-                            }
-                            geometry.attributes.position.needsUpdate = true;
-
-                            renderer.render(scene, camera);
-                        }
-                        animate();
-
-                        // Ajustar tamaño automáticamente en PC y al girar el móvil
-                        window.addEventListener('resize', () => {
-                            camera.aspect = window.innerWidth / window.innerHeight;
-                            camera.updateProjectionMatrix();
-                            renderer.setSize(window.innerWidth, window.innerHeight);
-                            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-                        });
-                    </script>
-                    </body></html>
-                    '''
-
-                    self.wfile.write(lock_html.encode('utf-8'))
-                    return
-            # ------------------------------------------
-
-            # API de librería
+            # API de la librería musical
             if self.path == '/api/music':
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
                 self.end_headers()
-                data = scan_music()
-                self.wfile.write(json.dumps(data).encode('utf-8'))
+                self.wfile.write(json.dumps(CACHED_LIBRARY).encode('utf-8'))
                 return
 
             # Servir ficheros de música/imágenes
@@ -275,7 +283,6 @@ class MusicServerHandler(BaseHTTPRequestHandler):
                         self.manejar_fichero_audio(full_path)
                     else:
                         self.send_response(200)
-                        # Le dice al navegador que guarde la portada en caché durante 1 día (86400 segundos)
                         self.send_header('Cache-Control', 'public, max-age=86400')
                         self.end_headers()
                         with open(full_path, 'rb') as f: 
@@ -284,19 +291,15 @@ class MusicServerHandler(BaseHTTPRequestHandler):
                 self.send_error(404)
                 return
 
-            # Servir index.html
+            # Servir index.html, favicon.ico y recursos estáticos locales normales
             base_dir = os.path.dirname(os.path.abspath(__file__))
             path = 'index.html' if self.path == '/' else unquote(self.path).lstrip('/')
             full_path = os.path.join(base_dir, path)
 
-            # --- Condicional de seguridad ---
-            if os.path.basename(full_path) == "pass.txt":
-                self.send_error(403)
-                return
-            # --------------------------------------------
-
-            if os.path.exists(full_path):
+            if os.path.exists(full_path) and os.path.isfile(full_path):
                 self.send_response(200)
+                if es_favicon:
+                    self.send_header('Content-Type', 'image/x-icon')
                 self.end_headers()
                 with open(full_path, 'rb') as f: 
                     self.wfile.write(f.read())
@@ -309,7 +312,6 @@ class MusicServerHandler(BaseHTTPRequestHandler):
             print(f"Error inesperado: {e}")
             self.send_error(500)
 
-# Crea una variable global para almacenar la librería
 CACHED_LIBRARY = []
 
 def actualizar_biblioteca():
@@ -318,10 +320,8 @@ def actualizar_biblioteca():
     CACHED_LIBRARY = scan_music()
     print("Escaneo completado.")
 
-# En tu if __name__ == '__main__':
 if __name__ == '__main__':
     evitar_doble_ejecucion()
-    actualizar_biblioteca() # Escaneamos ANTES de arrancar
-    # Cambio HTTPServer por ThreadingHTTPServer para multithread
+    actualizar_biblioteca()
     server = ThreadingHTTPServer(('0.0.0.0', PORT), MusicServerHandler)
     server.serve_forever()

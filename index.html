@@ -28,6 +28,13 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden select-none">
 
+    <button id="btn-logout" onclick="cerrarSesion()" class="hidden fixed top-4 right-4 z-50 bg-neutral-900/80 hover:bg-[#1db954] text-gray-400 hover:text-black border border-neutral-800 hover:border-transparent font-mono text-xs font-bold px-3 py-2 rounded-lg backdrop-blur-sm cursor-pointer transition-all shadow-lg flex items-center gap-1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+        </svg>
+        Logout
+    </button>
+
     <div class="flex flex-1 overflow-hidden">
         <aside class="w-64 lg:w-[22rem] bg-black p-4 lg:p-6 flex flex-col gap-4 hidden md:flex flex-shrink-0 h-full overflow-hidden">
             <div class="text-xl font-black text-white flex items-center gap-2 tracking-tight flex-shrink-0 mb-2">
@@ -172,34 +179,44 @@
         async function init() {
             const grid = document.getElementById('albums-grid');
             grid.innerHTML = '<p class="text-gray-400 animate-pulse">Scanning music, please wait...</p>';
-            
+
+            // 1. Control del botón de Logout (Solo visible si hay token guardado)
+            const token = localStorage.getItem('azpwd');
+            if (token) {
+                const logoutBtn = document.getElementById('btn-logout');
+                if (logoutBtn) logoutBtn.classList.remove('hidden');
+            }
+
             try {
-                // Enviamos la contraseña guardada en las cabeceras custom de la petición
-                const pwd = localStorage.getItem('azpwd') || '';
+                // 2. Petición limpia enviando cabecera custom de seguridad
+                const pwd = token || '';
                 const res = await fetch('/api/music', {
                     headers: { 'X-Azify-Pass': pwd }
                 });
-                
-                // Si el servidor nos da un 401 (Password incorrecto o caducado en el txt), limpiamos y recargamos
+
                 if (res.status === 401) {
                     localStorage.removeItem('azpwd');
+                    document.cookie = "azpwd=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                     location.reload();
                     return;
                 }
-                
+
+                // 3. Renderizado y asignación de datos
                 musicData = await res.json();
-                
-                grid.innerHTML = ''; 
                 renderAlbums();
                 renderSidebar();
-                
-                const savedVolume = localStorage.getItem('player-volume') || 0.8;
-                audioPlayer.volume = savedVolume;
-                document.getElementById('volume-slider').value = savedVolume;
+
             } catch (err) {
-                grid.innerHTML = '<p class="text-red-500">Error loading library. Check server status.</p>';
-                console.error("Error loading library:", err);
+                console.error("Error cargando la música:", err);
+                grid.innerHTML = '<p class="text-red-500">Error loading music library.</p>';
             }
+        }
+
+        // 3. La función de cerrar sesión se define fuera de init(), totalmente independiente
+        function cerrarSesion() {
+            localStorage.removeItem('azpwd');
+            document.cookie = "azpwd=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            location.reload();
         }
 
         function changeVolume(event) {
@@ -209,7 +226,7 @@
         }
 
         function playAlbumFromSidebar(index) {
-            isShuffleActive = false;
+            isShuffleActive = false; // Desactiva el shuffle al saltar a una carpeta nueva
             showAlbum(index);
             setTimeout(() => {
                 playAlbumFirstTrack(index);
@@ -621,6 +638,8 @@
         });
 
         window.onload = init;
+
     </script>
+
 </body>
 </html>
