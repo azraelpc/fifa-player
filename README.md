@@ -1,6 +1,8 @@
 # FIFA Retro Player 1.0 🎮🎵
 
-Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y ordenadores a baja resolución).
+Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. 
+
+Soporta los formatos tipicos (mp3, ogg, flac, etc). El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y ordenadores a baja resolución). 2 archivos: Usa el Python para generar el servidor web y el Index.html para el interface.
 
 Lo he hecho inicialmente para alojar las bandas sonoras de FIFA que tengo en mi disco duro externo (always connected) pero puede usarse para cualquier carpeta de musica, con pequeños ajustes. Lo hice como python en el puerto 5154, luego lo conecto a un subdominio de mi web via cloudflare tunnels. Igual me animo a hacer un cliente .apk para Android Auto, con lo que podría sustituir al Subsonic que uso actualmente en el coche.
 
