@@ -134,6 +134,8 @@
         let musicData = [];
         let currentAlbumIdx = -1;
         let currentTrackIdx = -1;
+        let lastAlbumIndex = -1;
+
         
         const audioPlayer = document.getElementById('audio-player');
         const progressBar = document.getElementById('progress-bar');
@@ -219,6 +221,35 @@
 	    `).join('');
 	}
 
+
+        function refreshTracksList(albumIdx) {
+            const album = musicData[albumIdx];
+            const list = document.getElementById('tracks-list');
+            
+            // Solo actualizamos el contenido del TBODY
+            list.innerHTML = album.tracks.map((track, trackIdx) => {
+                const isCurrent = (currentAlbumIdx === albumIdx && currentTrackIdx === trackIdx);
+                const isPlaying = isCurrent && !audioPlayer.paused;
+                return `
+                <tr ondblclick="pressTrackRow(${albumIdx}, ${trackIdx})"
+                    class="hover:bg-white/5 transition group ${isCurrent ? 'bg-white/5 text-[#1db954]' : ''}">
+                    <td class="p-2 md:p-3 text-center text-gray-500 font-bold">${trackIdx + 1}</td>
+                    <td class="p-2 md:p-3 text-center">
+                        <button onclick="pressTrackRow(${albumIdx}, ${trackIdx})" class="text-gray-400 hover:text-[#1db954] transition cursor-pointer">
+                            ${isPlaying ? 
+                                `<svg class="w-4 h-4 fill-current text-[#1db954]" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>` : 
+                                `<svg class="w-4 h-4 fill-current ${isCurrent ? 'text-[#1db954]' : ''}" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`
+                            }
+                        </button>
+                    </td>
+                    <td class="p-2 md:p-3 font-medium truncate max-w-[180px] sm:max-w-xs ${isCurrent ? 'text-[#1db954]' : 'text-white'}">${escapeHTML(track.title)}</td>
+                    <td class="p-2 md:p-3 text-center text-gray-400 font-mono text-xs">${escapeHTML(track.duration)}</td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+
         function renderSidebar() {
             const list = document.getElementById('sidebar-album-list');
             list.innerHTML = musicData.map((item, index) => {
@@ -274,18 +305,28 @@
                 placeholder.classList.remove('hidden');
             }
 
-            showAlbum(albumIdx);
+            const albumView = document.getElementById('album-view');
+            if (albumView.classList.contains('hidden') || currentAlbumIdx !== albumIdx) {
+                showAlbum(albumIdx);
+            } else {
+                // Si YA estamos en el álbum, solo refrescamos la lista de tracks 
+                // sin llamar a showAlbum completo (que resetea el scroll)
+                refreshTracksList(albumIdx);
+            }
+
         }
 
 	function showAlbum(index) {
             const album = musicData[index];
+
             document.getElementById('main-view').classList.add('hidden');
             document.getElementById('album-view').classList.remove('hidden');
 
-            const mainContainer = document.querySelector('main');
-            mainContainer.scrollTop = 0;
+            if (index !== lastAlbumIndex) {
+                document.querySelector('main').scrollTop = 0;
+                lastAlbumIndex = index;
+            }
 
-            // --- CAMBIO AQUÍ: Inyectamos el título y el botón juntos ---
             document.getElementById('view-title').innerHTML = `
                 <div class="flex items-center gap-4">
                     <span>${escapeHTML(album.album)}</span>
@@ -295,7 +336,6 @@
                     </button>
                 </div>
             `;
-            // ---------------------------------------------------------
 
             document.getElementById('view-cover').src = album.cover;
             document.getElementById('view-count').innerText = `${album.tracks.length} tracks`;
