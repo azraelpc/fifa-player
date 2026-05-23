@@ -408,12 +408,20 @@
             audioPlayer.currentTime = pct * audioPlayer.duration;
         }
 
-        function setupVisualizer() {
+        async function setupVisualizer() {
             canvas = document.getElementById('vu-meter');
             if (!canvas || canvas.offsetParent === null) return; 
-            if (audioContext) return;
+
+            if (audioContext) {
+               if (audioContext.state === 'suspended') {
+                   await audioContext.resume();
+               }
+            return;
+            }
 
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            await audioContext.resume();
+
             analyser = audioContext.createAnalyser();
             analyser.fftSize = 64; 
             
