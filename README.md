@@ -202,4 +202,4 @@ Security note: The Python web server includes a strict guard that explicitly blo
 ## ToDo / Known Issues
 
 - `"Duration"` in WAV/FLAC is often not very accurate, I need to improve it. In MP3 it seems fine, and during playback all formats display correctly at the bottom.
-- Although the script scans all subfolders inside the given path (eg: `"/music/folder1/folder2/Cool Album"` and correctly appear in the albuns list as `"Cool Album"`), it's not able to play songs from that folder - bug?.
+- Although the script scans all subfolders inside the given path (eg: `"/music/folder1/folder2/Cool Album"` and correctly appear in the albums list as `"Cool Album"`), it's not able to play songs from that folder - bug?.
