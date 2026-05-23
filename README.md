@@ -2,11 +2,13 @@
 
 Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. 
 
-Soporta los formatos tipicos (mp3, ogg, flac, etc). El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y ordenadores a baja resolución). 2 archivos: Usa el Python para generar el servidor web y el Index.html para el interface.
+Soporta los formatos tipicos (mp3, ogg, flac, etc). El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y ordenadores a baja resolución). 
+
+Solo necesita 2 archivos: Python para generar el servidor web y Index.html para el interface. Tambien 2 imagenes (favicon y fallback para no-cover).
 
 Puede usarse para cualquier carpeta de musica desde que el Python tenga acceso, mediante la variable MUSIC_DIR del server.py. El archivo Python sirve la web en el puerto 5155, luego yo personalmente lo uso conectando ese peurto a un subdominio de mi web via cloudflare tunnels. Igual me animo a hacer un cliente .apk para Android Auto, con lo que podría sustituir al Subsonic que uso actualmente en el coche.
 
-Para las portadas, justo a los mp3 debe haber algun archivo de imagen, tomando como prioridad los que tengan nombre como cover.png, front.png (o .jpg).
+Para las portadas, justo a los mp3 debe haber algun archivo de imagen, tomando como prioridad los que tengan nombre como cover.png, front.png (o .jpg). Si no encuentra, muestra el nocover.jpg.
 
 Para hacerlo sencillo (como si fueran CDs de verdad) la estructura preferible es un CD por carpeta, con su png/jpg de caratula. Aunque el script busca en todas las subcarpetas de la ruta dada (eg: "/musica/carpeta1/carpeta2/Album Chulo" aparecerá en la lista de CDs como "Album Chulo").
 
@@ -28,7 +30,10 @@ Para hacerlo sencillo (como si fueran CDs de verdad) la estructura preferible es
 ~/azify/
 ├── index.html          # Frontend responsivo estructurado con Tailwind CSS
 ├── server.py           # Servidor backend en Python (API y servidor de estáticos)
-└── music/              # ojo: el server.py lee la musica del path de la variable MUSIC_DIR y lo mapea al servidor web en la ruta virtual /music
+├── favicon.png         # Icono del website para navegador/bookmarks
+├── nocover.jpg         # CD Cover que muestra cuando no encuentra ninguna imagen en la carpeta del album
+├── server.py           # Servidor backend en Python (API y servidor de estáticos)
+└── music/              # ojo: el server.py lee la musica del path de la variable MUSIC_DIR y lo mapea al servidor web en la ruta virtual "/music"
     ├── FIFA 98/        
     │   ├── cover.jpg
     │   └── track1.mp3
@@ -59,7 +64,7 @@ pip install mutagen
 
 ## Instalación y Despliegue Local
 
-1. **Crear la estructura de directorios:** (si usas /music, acuerdate de cambiar la variable del patch en el server.py, que yo uso mi /superdisk/...)
+1. **Crear la estructura de directorios:** (Recuerda! si usas /music, acuerdate de cambiar la variable del path (MUSIC_DIC) en el server.py, que yo uso mi /superdisk/...)
    ```bash
    mkdir -p ~/azify/music
    cd ~/azify
