@@ -14,7 +14,7 @@ It can be used for any music folder as long as Python has access to it, through 
 
 For album covers, there should be an image file next to the mp3s, prioritizing names like `cover.png`, `front.png` (or `.jpg`). If none is found, it shows `nocover.jpg`.
 
-To keep it simple (like real CDs), the preferred structure is one CD per folder, with its png/jpg cover art. Although the script scans all subfolders inside the given path (eg: `"/music/folder1/folder2/Cool Album"` will appear in the CD list as `"Cool Album"`).
+To keep it simple (like real CDs), the preferred structure is one CD per folder, with its png/jpg cover art. 
 
 ## Main Features
 
@@ -202,3 +202,4 @@ Security note: The Python web server includes a strict guard that explicitly blo
 ## ToDo / Known Issues
 
 - `"Duration"` in WAV/FLAC is often not very accurate, I need to improve it. In MP3 it seems fine, and during playback all formats display correctly at the bottom.
+- Although the script scans all subfolders inside the given path (eg: `"/music/folder1/folder2/Cool Album"` and correctly appear in the albuns list as `"Cool Album"`), it's not able to play songs from that folder - bug?.
