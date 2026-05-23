@@ -168,7 +168,7 @@ class MusicServerHandler(BaseHTTPRequestHandler):
                 lock_html = '''
                 <!DOCTYPE html><html style="background-color: #0c0c0c !important;"><head><meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-                <title>AZify Lock</title>
+                <title>Welcome to AZify - Enter Password</title>
                 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
                 <style>
