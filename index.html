@@ -174,7 +174,19 @@
             grid.innerHTML = '<p class="text-gray-400 animate-pulse">Scanning music, please wait...</p>';
             
             try {
-                const res = await fetch('/api/music');
+                // Enviamos la contraseña guardada en las cabeceras custom de la petición
+                const pwd = localStorage.getItem('azpwd') || '';
+                const res = await fetch('/api/music', {
+                    headers: { 'X-Azify-Pass': pwd }
+                });
+                
+                // Si el servidor nos da un 401 (Password incorrecto o caducado en el txt), limpiamos y recargamos
+                if (res.status === 401) {
+                    localStorage.removeItem('azpwd');
+                    location.reload();
+                    return;
+                }
+                
                 musicData = await res.json();
                 
                 grid.innerHTML = ''; 

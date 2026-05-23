@@ -11,6 +11,7 @@ from urllib.parse import unquote
 MUSIC_DIR = "/superdisk/# AZIFY"
 PORT = 5155
 LOCK_FILE = "/tmp/azify.lock"
+PASS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pass.txt")
 
 AUDIO_EXTS = ('.mp3', '.ogg', '.wav', '.flac', '.m4a')
 IMAGE_NAMES = ('cover.jpg', 'cover.png', 'front.jpg', 'front.png', 'default.jpg')
@@ -130,6 +131,126 @@ class MusicServerHandler(BaseHTTPRequestHandler):
     
     def do_GET(self):
         try:
+            # --- Añadir esto al principio de do_GET ---
+            if os.path.exists(PASS_FILE):
+                with open(PASS_FILE, 'r', encoding='utf-8') as f:
+                    valid_pass = f.read().strip()
+                
+                # Leemos la clave que envía el navegador en las cabeceras
+                user_pass = self.headers.get('X-Azify-Pass', '')
+                
+                if user_pass != valid_pass:
+                    # Si no coincide y pide la API o música, bloqueamos
+                    if self.path.startswith('/api/') or self.path.startswith('/music/'):
+                        self.send_error(401)
+                        return
+                    
+                    # Si pide la web, le servimos la pantalla de bloqueo integrada
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html; charset=utf-8')
+                    self.end_headers()
+
+                    lock_html = '''
+                    <!DOCTYPE html><html><head><meta charset="UTF-8"><title>AZify Lock</title>
+                    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+                    <!-- Cargamos Three.js desde CDN -->
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+                    <style>
+                        #canvas-container { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 0; overflow: hidden; }
+                        /* Asegura que el input no haga zoom automático molesto en iOS */
+                        @media screen and (max-width: 768px) { input[type="password"] { font-size: 16px !important; } }
+                    </style>
+                    </head>
+                    <body class="bg-[#0c0c0c] flex h-screen items-center justify-center font-mono overflow-hidden select-none">
+                    
+                    <!-- Contenedor para el lienzo de Three.js -->
+                    <div id="canvas-container"></div>
+
+                    <!-- Cuadro de Login flotante -->
+                    <div class="relative z-10 bg-black/60 p-8 rounded-2xl border border-white/10 text-center shadow-2xl max-w-xs w-full backdrop-blur-md mx-4">
+                        <h2 class="text-xl font-black text-white mb-1 tracking-tight">Welcome to AZify</h2>
+                        <p class="text-[11px] text-gray-400 mb-5">This AZify is private.<br>Please enter the password.</p>
+                        
+                        <input type="password" id="p" placeholder="Password" onkeydown="if(event.key==='Enter') document.getElementById('btn-in').click()" class="w-full bg-neutral-900/80 border border-neutral-800 rounded-lg px-3 py-2.5 text-white text-center mb-4 focus:outline-none focus:border-[#1db954] font-bold transition-all">
+                        
+                        <button id="btn-in" onclick="localStorage.setItem('azpwd', document.getElementById('p').value); location.reload();" class="w-full bg-[#1db954] text-black font-black py-2.5 rounded-lg hover:bg-[#1ed760] transition transform active:scale-95 cursor-pointer">Sign in</button>
+                    </div>
+
+                    <script>
+                        // --- Configuración de Three.js (Efecto de partículas sutiles) ---
+                        const container = document.getElementById('canvas-container');
+                        const scene = new THREE.Scene();
+                        scene.background = new THREE.Color(0x0c0c0c);
+
+                        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                        camera.position.z = 100;
+
+                        const renderer = new THREE.WebGLRenderer({ antialias: true });
+                        renderer.setSize(window.innerWidth, window.innerHeight);
+                        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimización para pantallas Retina/Móviles
+                        container.appendChild(renderer.domElement);
+
+                        // Crear campo de partículas (estrellas/nodos)
+                        const particlesCount = window.innerWidth < 768 ? 400 : 900; // Menos partículas en móvil para mejor rendimiento
+                        const geometry = new THREE.BufferGeometry();
+                        const positions = new Float32Array(particlesCount * 3);
+
+                        for(let i = 0; i < particlesCount * 3; i += 3) {
+                            positions[i] = (Math.random() - 0.5) * 300;     // X
+                            positions[i+1] = (Math.random() - 0.5) * 300;   // Y
+                            positions[i+2] = (Math.random() - 0.5) * 200;   // Z
+                        }
+
+                        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                        // Material en forma de puntos verdes difuminados sutiles
+                        const material = new THREE.PointsMaterial({
+                            color: 0x1db954,
+                            size: window.innerWidth < 768 ? 2.5 : 1.8,
+                            transparent: true,
+                            opacity: 0.45,
+                            blending: THREE.AdditiveBlending
+                        });
+
+                        const particleSystem = new THREE.Points(geometry, material);
+                        scene.add(particleSystem);
+
+                        // Animación en bucle
+                        function animate() {
+                            requestAnimationFrame(animate);
+                            
+                            const time = Date.now() * 0.00015;
+                            
+                            // Rotación lenta y sutil en dos ejes
+                            particleSystem.rotation.y = time;
+                            particleSystem.rotation.x = time * 0.5;
+                            
+                            // Ondulación interna muy leve simulando un espacio vivo
+                            const positions = geometry.attributes.position.array;
+                            for (let i = 1; i < positions.length; i += 3) {
+                                positions[i] += Math.sin(time + i) * 0.03; // Movimiento vertical sutil
+                            }
+                            geometry.attributes.position.needsUpdate = true;
+
+                            renderer.render(scene, camera);
+                        }
+                        animate();
+
+                        // Ajustar tamaño automáticamente en PC y al girar el móvil
+                        window.addEventListener('resize', () => {
+                            camera.aspect = window.innerWidth / window.innerHeight;
+                            camera.updateProjectionMatrix();
+                            renderer.setSize(window.innerWidth, window.innerHeight);
+                            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                        });
+                    </script>
+                    </body></html>
+                    '''
+
+                    self.wfile.write(lock_html.encode('utf-8'))
+                    return
+            # ------------------------------------------
+
             # API de librería
             if self.path == '/api/music':
                 self.send_response(200)
@@ -167,6 +288,13 @@ class MusicServerHandler(BaseHTTPRequestHandler):
             base_dir = os.path.dirname(os.path.abspath(__file__))
             path = 'index.html' if self.path == '/' else unquote(self.path).lstrip('/')
             full_path = os.path.join(base_dir, path)
+
+            # --- Condicional de seguridad ---
+            if os.path.basename(full_path) == "pass.txt":
+                self.send_error(403)
+                return
+            # --------------------------------------------
+
             if os.path.exists(full_path):
                 self.send_response(200)
                 self.end_headers()

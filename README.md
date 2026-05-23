@@ -2,7 +2,7 @@
 
 <img height="50" alt="{939BC6ED-591F-452B-8653-628985BE4F13}" src="https://github.com/user-attachments/assets/7491c8ad-eccd-491d-9e59-1efcbcaf90b4" />
 
-Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. Sirve por hhtp por defecto en el puerto 5155.
+Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. Sirve por defecto en el puerto 5155.
 
 Soporta los formatos tipicos (mp3, ogg, flac, etc). El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y ordenadores a baja resolución). 
 
@@ -26,6 +26,7 @@ Para hacerlo sencillo (como si fueran CDs de verdad) la estructura preferible es
 - **Visualizador de Audio (VU-Meter):** Renderizado dinámico en un componente Canvas HTML5 utilizando la API de Audio Context de JavaScript (oculto de forma inteligente en dispositivos móviles para optimizar rendimiento).
 - **Normalizacion de Volumen:** Al venir los CDS/Singles de diferentes fuentes seguramente, aplicamos compresor/normalizacion de volumen para mitigar canciones grabadas a bajo volumen y evitar saltos.
 - **Backend Fluido:** Servidor de archivos ligero implementado en Python que escanea automáticamente el directorio de música, extrae las pistas y expone un endpoint JSON robusto.
+- **Protección de Acceso Ultra-Simple:** Control de acceso opcional mediante barrera de autenticación integrada. Si el sistema detecta un archivo de clave (pass.txt), bloquea la API y la música, desplegando un frontend interactivo en 3D (Three.js) para ingresar la contraseña.
 
 ## Estructura del Proyecto
 
@@ -36,6 +37,7 @@ Para hacerlo sencillo (como si fueran CDs de verdad) la estructura preferible es
 ├── favicon.png         # Icono del website para navegador/bookmarks
 ├── nocover.jpg         # CD Cover que muestra cuando no encuentra ninguna imagen en la carpeta del album
 ├── server.py           # Servidor backend en Python (API y servidor de estáticos)
+├── pass.txt            # (Opcional) Archivo de texto plano con la contraseña de acceso web
 └── music/              # ojo: el server.py lee la musica del path de la variable MUSIC_DIR y lo mapea al servidor web en la ruta virtual "/music"
     ├── FIFA 98/        
     │   ├── cover.jpg
@@ -58,7 +60,6 @@ sudo apt install python3 python3-pip -y
 
 ...y tambien instalar la libreria **mutagen** (para que detecte cual es la duracion de las pistas). 
 ```bash
-sudo apt update
 sudo apt install python3 python3-pip -y
 pip install mutagen
 ```
@@ -162,6 +163,24 @@ Si realizas modificaciones en el código de tu `server.py` o quieres controlar e
   ```
 
 ---
+
+## Control de Acceso y Seguridad
+
+El reproductor incluye un sistema de bloqueo nativo muy fácil de gestionar sin necesidad de bases de datos ni cookies complejas:
+
+### ¿Cómo activar la contraseña?
+Solo tienes que crear un archivo llamado `pass.txt` en la misma carpeta raíz donde se encuentra el script `server.py` y escribir tu contraseña dentro (en una sola línea y limpia de espacios):
+
+```bash
+echo "G3l1p011a5" > pass.txt
+
+La próxima vez que accedas a la web (o si el almacenamiento local expira), el servidor interceptará las peticiones y cargará una pantalla de bloqueo con un fondo animado en Three.js. 
+La contraseña se almacena de forma segura en el localStorage de tu navegador (azpwd) y se envía al servidor mediante cabeceras HTTP personalizadas (X-Azify-Pass).
+
+### ¿Cómo quitar la contraseña?
+Para volver a hacer la web 100% pública y de libre acceso, simplemente elimina el archivo desde la terminal de tu servidor: rm pass.txt
+
+### Nota de seguridad: El servidor web en Python tiene una valla estricta que bloquea explícitamente cualquier petición directa a http://tu-ip:5155/pass.txt, por lo que el archivo es totalmente invisible e inaccesible desde el exterior. El archivo pass.txt ha sido añadido al .gitignore para evitar filtraciones accidentales en repositorios públicos.
 
 ## Contribuciones y Notas de Desarrollo
 
