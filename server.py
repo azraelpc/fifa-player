@@ -122,50 +122,69 @@ class MusicServerHandler(BaseHTTPRequestHandler):
         with open(full_path, 'rb') as f:
             f.seek(start)
             self.wfile.write(f.read(end - start + 1))
-
+    
     def do_GET(self):
-        # API de librería
-        if self.path == '/api/music':
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json; charset=utf-8')
-            self.end_headers()
-            self.wfile.write(json.dumps(scan_music()).encode('utf-8'))
-            return
-
-        # Servir ficheros de música/imágenes
-        if self.path.startswith('/music/'):
-            rel_file_path = unquote(self.path[7:])
-            base_dir_abs = os.path.realpath(MUSIC_DIR)
-            full_path = os.path.normpath(os.path.join(base_dir_abs, rel_file_path))
-            
-            if not full_path.startswith(base_dir_abs):
-                self.send_error(403)
+        try:
+            # API de librería
+            if self.path == '/api/music':
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.end_headers()
+                self.wfile.write(json.dumps(CACHED_LIBRARY).encode('utf-8'))
                 return
-                
-            if os.path.exists(full_path) and os.path.isfile(full_path):
-                if full_path.lower().endswith(AUDIO_EXTS):
-                    self.manejar_fichero_audio(full_path)
-                else:
-                    self.send_response(200)
-                    self.end_headers()
-                    with open(full_path, 'rb') as f: self.wfile.write(f.read())
+
+            # Servir ficheros de música/imágenes
+            if self.path.startswith('/music/'):
+                rel_file_path = unquote(self.path[7:])
+                base_dir_abs = os.path.realpath(MUSIC_DIR)
+                full_path = os.path.normpath(os.path.join(base_dir_abs, rel_file_path))
+
+                if not full_path.startswith(base_dir_abs):
+                    self.send_error(403)
+                    return
+
+                if os.path.exists(full_path) and os.path.isfile(full_path):
+                    if full_path.lower().endswith(AUDIO_EXTS):
+                        self.manejar_fichero_audio(full_path)
+                    else:
+                        self.send_response(200)
+                        self.end_headers()
+                        with open(full_path, 'rb') as f: 
+                            self.wfile.write(f.read())
+                    return
+                self.send_error(404)
                 return
-            self.send_error(404)
+
+            # Servir index.html
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            path = 'index.html' if self.path == '/' else unquote(self.path).lstrip('/')
+            full_path = os.path.join(base_dir, path)
+            if os.path.exists(full_path):
+                self.send_response(200)
+                self.end_headers()
+                with open(full_path, 'rb') as f: 
+                    self.wfile.write(f.read())
+            else:
+                self.send_error(404)
+
+        except (ConnectionResetError, BrokenPipeError):
             return
+        except Exception as e:
+            print(f"Error inesperado: {e}")
+            self.send_error(500)
 
-        # Servir index.html
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        path = 'index.html' if self.path == '/' else unquote(self.path).lstrip('/')
-        full_path = os.path.join(base_dir, path)
-        if os.path.exists(full_path):
-            self.send_response(200)
-            self.end_headers()
-            with open(full_path, 'rb') as f: self.wfile.write(f.read())
-        else:
-            self.send_error(404)
+# Crea una variable global para almacenar la librería
+CACHED_LIBRARY = []
 
+def actualizar_biblioteca():
+    global CACHED_LIBRARY
+    print("Escaneando biblioteca...")
+    CACHED_LIBRARY = scan_music()
+    print("Escaneo completado.")
+
+# En tu if __name__ == '__main__':
 if __name__ == '__main__':
     evitar_doble_ejecucion()
+    actualizar_biblioteca() # Escaneamos ANTES de arrancar
     server = HTTPServer(('0.0.0.0', PORT), MusicServerHandler)
-    print(f"Servidor iniciado en puerto {PORT}")
     server.serve_forever()
