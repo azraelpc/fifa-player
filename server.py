@@ -186,7 +186,7 @@ class MusicServerHandler(BaseHTTPRequestHandler):
                     <p class="text-[11px] text-gray-400 mb-5">This AZify is private.<br>Please enter the password.</p>
                     
 
-                    <input type="text" id="p" name="azify-token" autocomplete="off" placeholder="Password" onkeydown="if(event.key==='Enter') document.getElementById('btn-in').click()" class="w-full bg-neutral-900/80 border border-neutral-800 rounded-lg px-3 py-2.5 text-white text-center mb-4 focus:outline-none focus:border-[#1db954] font-bold transition-all box-border style-security">
+                    <input type="text" id="p" name="azify-token" autocomplete="off" placeholder="Password" onkeydown="if(event.key==='Enter') document.getElementById('btn-in').click()" class="w-full bg-neutral-900/80 border border-neutral-800 rounded-lg px-3 py-2.5 text-white text-center mb-4 focus:outline-none focus:border-[#1db954] font-bold transition-all box-border style-security" autofocus>
 
                     <style>
                         /* Forzamos el ocultado de caracteres estilo password en un input de texto plano */
