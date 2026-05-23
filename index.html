@@ -185,6 +185,17 @@
             localStorage.setItem('player-volume', vol);
         }
 
+    function playAlbumFromSidebar(index) {
+        // 1. Abre la vista del álbum
+        showAlbum(index);
+        
+        // 2. Ejecuta el play de la primera canción
+        // Usamos setTimeout breve para asegurar que la UI haya procesado el showAlbum antes
+        setTimeout(() => {
+            playAlbumFirstTrack(index);
+        }, 50);
+    }
+
 	function renderAlbums() {
 	    const grid = document.getElementById('albums-grid');
 	    grid.innerHTML = musicData.map((item, index) => `
@@ -202,19 +213,22 @@
 	        </div>
 	    `).join('');
 	}
+
         function renderSidebar() {
             const list = document.getElementById('sidebar-album-list');
             list.innerHTML = musicData.map((item, index) => {
                 const isCurrentAlbum = (currentAlbumIdx === index);
                 const safeAlbum = escapeHTML(item.album);
                 return `
-                <a href="javascript:void(0)" onclick="showAlbum(${index})" class="transition py-0.5 text-xs block tracking-tight whitespace-nowrap overflow-visible text-left border-l-2 pl-2 ${
+                <div onclick="showAlbum(${index})" 
+                     ondblclick="playAlbumFromSidebar(${index})"
+                     class="transition py-0.5 text-xs block cursor-pointer tracking-tight whitespace-nowrap overflow-hidden text-ellipsis border-l-2 pl-2 ${
                     isCurrentAlbum 
                         ? 'text-[#1db954] font-bold border-[#1db954]' 
                         : 'text-gray-400 hover:text-white border-transparent'
                 }" title="${safeAlbum}">
                     • ${safeAlbum}
-                </a>
+                </div>
                 `;
             }).join('');
         }
