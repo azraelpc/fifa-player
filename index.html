@@ -43,9 +43,18 @@
                 <span class="lg:hidden">AZify</span>
             </div>            
             <div class="flex flex-col gap-4 text-gray-400 font-bold text-sm flex-shrink-0">
-		<a href="javascript:void(0)" onclick="showHome()" class="hover:text-white flex items-center gap-3 text-white transition">Home</a>
+                <a href="javascript:void(0)" onclick="showHome()" class="hover:text-white flex items-center gap-3 text-white transition">Home</a>
                 <button onclick="playAll()" class="hover:text-white flex items-center gap-3 transition text-left cursor-pointer w-full">Play All</button>
                 <div class="border-t border-gray-800 my-1"></div>
+                
+                <!-- Sección Filtro de Texto -->
+                <div class="flex items-center gap-2 text-xs font-mono">
+                    <span class="text-gray-500 font-black tracking-wider uppercase shrink-0">Filter:</span>
+                    <input type="text" id="search-filter" autofocus autocomplete="off" placeholder="..." 
+                           class="flex-1 bg-neutral-900 text-white border border-neutral-800 focus:border-[#1db954] focus:outline-none rounded px-2 py-1 text-xs font-mono transition-colors"
+                           oninput="handleFilterChange()" onkeydown="handleFilterNavigation(event)">
+                </div>
+
                 <p class="text-xs uppercase tracking-wider text-gray-500 font-black">Your Library</p>
             </div>
             <div class="flex-1 overflow-y-auto pr-1 flex flex-col gap-1 font-normal text-gray-400 pb-4 min-h-0" id="sidebar-album-list"></div>
@@ -66,7 +75,7 @@
                     <img id="view-cover" class="w-30 h-30 md:w-48 md:h-48 object-cover rounded shadow-2xl border border-white/5" src="" alt="">
                     <div class="flex-1">
                         <p class="text-xs font-bold uppercase text-gray-400">Album</p>
-			<h3 id="view-title" class="text-2xl md:text-5xl font-black text-white mt-2 tracking-tight flex flex-wrap items-center gap-4"></h3>
+                        <h3 id="view-title" class="text-2xl md:text-5xl font-black text-white mt-2 tracking-tight flex flex-wrap items-center gap-4"></h3>
                         <p id="view-count" class="text-sm text-gray-400 mt-2 font-medium"></p>
                     </div>
                 </div>
@@ -90,52 +99,52 @@
 
     <audio id="audio-player"></audio>
 
-	<footer class="h-24 bg-[#181818] border-t border-gray-900 px-4 flex items-center justify-between z-50 gap-4 shrink-0 overflow-hidden">
-	    
-	    <div class="flex items-center gap-3 w-1/4 min-w-[150px]">
-	        <div class="w-12 h-12 bg-[#282828] rounded flex items-center justify-center border border-white/5 overflow-hidden flex-shrink-0">
-	            <img id="current-cover" class="w-full h-full object-cover hidden" src="" alt="">
-	            <svg id="placeholder-cover" class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
-	        </div>
-	        <div class="overflow-hidden">
-	            <p id="current-title" class="text-sm text-white font-semibold truncate">No track selected</p>
-	            <p id="current-album" class="text-xs text-gray-400 truncate">-</p>
-	        </div>
-	    </div>
+    <footer class="h-24 bg-[#181818] border-t border-gray-900 px-4 flex items-center justify-between z-50 gap-4 shrink-0 overflow-hidden">
+        
+        <div class="flex items-center gap-3 w-1/4 min-w-[150px]">
+            <div class="w-12 h-12 bg-[#282828] rounded flex items-center justify-center border border-white/5 overflow-hidden flex-shrink-0">
+                <img id="current-cover" class="w-full h-full object-cover hidden" src="" alt="">
+                <svg id="placeholder-cover" class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+            </div>
+            <div class="overflow-hidden">
+                <p id="current-title" class="text-sm text-white font-semibold truncate">No track selected</p>
+                <p id="current-album" class="text-xs text-gray-400 truncate">-</p>
+            </div>
+        </div>
 
-	    <div class="flex flex-col items-center flex-1 max-w-xl gap-2">
-	        <div class="flex items-center gap-5">
-	            <button onclick="playPrevious()" class="text-gray-400 hover:text-white transition"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
-	            <button onclick="togglePlay()" id="master-play-btn" class="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition">
-	                <svg id="play-icon" class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-	                <svg id="pause-icon" class="w-4 h-4 fill-current hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-	            </button>
-	            <button onclick="playNext()" class="text-gray-400 hover:text-white transition"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
-	        </div>
-	        <div class="w-full flex items-center gap-2 text-xs text-gray-400 font-mono">
-	            <span id="time-current">0:00</span>
-	            <div class="flex-1 h-1 bg-[#404040] rounded-full relative cursor-pointer" id="progress-container" onclick="seekTrack(event)">
-	                <div class="absolute top-0 left-0 h-full bg-[#1db954] rounded-full" id="progress-bar" style="width: 0%"></div>
-	            </div>
-	            <span id="time-total">0:00</span>
-	        </div>
-	    </div>
+        <div class="flex flex-col items-center flex-1 max-w-xl gap-2">
+            <div class="flex items-center gap-5">
+                <button onclick="playPrevious()" class="text-gray-400 hover:text-white transition"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+                <button onclick="togglePlay()" id="master-play-btn" class="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition">
+                    <svg id="play-icon" class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="pause-icon" class="w-4 h-4 fill-current hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </button>
+                <button onclick="playNext()" class="text-gray-400 hover:text-white transition"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+            </div>
+            <div class="w-full flex items-center gap-2 text-xs text-gray-400 font-mono">
+                <span id="time-current">0:00</span>
+                <div class="flex-1 h-1 bg-[#404040] rounded-full relative cursor-pointer" id="progress-container" onclick="seekTrack(event)">
+                    <div class="absolute top-0 left-0 h-full bg-[#1db954] rounded-full" id="progress-bar" style="width: 0%"></div>
+                </div>
+                <span id="time-total">0:00</span>
+            </div>
+        </div>
 
-	<div class="w-1/4 flex justify-end items-center gap-2 overflow-hidden">
-	    <canvas id="vu-meter" class="w-20 h-8 hidden sm:block"></canvas>
-	    
-	    <div class="flex items-center gap-1 shrink-0">
-	        <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-	            <path d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L7.75 9.5H4.5v5h3.25L12 18.75z"></path>
-	        </svg>
-            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" 
-                   class="w-16 sm:w-20 h-1 bg-[#404040] rounded-full appearance-none cursor-pointer accent-[#1db954]" 
-                   oninput="changeVolume(event)"
-                   onwheel="scrollVolume(event)">
-	    </div>
-	</div>
+        <div class="w-1/4 flex justify-end items-center gap-2 overflow-hidden">
+            <canvas id="vu-meter" class="w-20 h-8 hidden sm:block"></canvas>
+            
+            <div class="flex items-center gap-1 shrink-0">
+                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L7.75 9.5H4.5v5h3.25L12 18.75z"></path>
+                </svg>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" 
+                       class="w-16 sm:w-20 h-1 bg-[#404040] rounded-full appearance-none cursor-pointer accent-[#1db954]" 
+                       oninput="changeVolume(event)"
+                       onwheel="scrollVolume(event)">
+            </div>
+        </div>
 
-	</footer>
+    </footer>
 
 
     <script>
@@ -147,6 +156,10 @@
         let isShuffleActive = false;
         let shuffleQueue = [];
         let shufflePointer = -1;
+
+        // Variables añadidas para el filtrado y navegación por teclado
+        let filteredIndices = [];
+        let keyboardActiveIdx = -1;
 
         const audioPlayer = document.getElementById('audio-player');
         const progressBar = document.getElementById('progress-bar');
@@ -204,8 +217,15 @@
 
                 // 3. Renderizado y asignación de datos
                 musicData = await res.json();
+                
+                // Inicializar índices filtrados con toda la música
+                filteredIndices = musicData.map((_, i) => i);
+
                 renderAlbums();
                 renderSidebar();
+
+                // Foco por defecto en el filtro
+                document.getElementById('search-filter').focus();
 
             } catch (err) {
                 console.error("Error cargando la música:", err);
@@ -213,7 +233,67 @@
             }
         }
 
-        // 3. La función de cerrar sesión se define fuera de init(), totalmente independiente
+        // Lógica de filtrado de texto y navegación por teclado
+        function handleFilterChange() {
+            const query = document.getElementById('search-filter').value.toLowerCase().trim();
+            
+            filteredIndices = [];
+            musicData.forEach((item, index) => {
+                if (item.album.toLowerCase().includes(query)) {
+                    filteredIndices.push(index);
+                }
+            });
+
+            keyboardActiveIdx = -1; // Reset del foco de teclado al escribir
+            renderAlbums();
+            renderSidebar();
+        }
+
+        function handleFilterNavigation(event) {
+            if (filteredIndices.length === 0) return;
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault(); // Evita mover el scroll horizontal o cursor del input
+                keyboardActiveIdx++;
+                if (keyboardActiveIdx >= filteredIndices.length) {
+                    keyboardActiveIdx = 0;
+                }
+                updateSidebarActiveVisual();
+            } 
+            else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                keyboardActiveIdx--;
+                if (keyboardActiveIdx < 0) {
+                    keyboardActiveIdx = filteredIndices.length - 1;
+                }
+                updateSidebarActiveVisual();
+            } 
+            else if (event.key === 'Enter') {
+                event.preventDefault();
+                const pointer = keyboardActiveIdx === -1 ? 0 : keyboardActiveIdx;
+                const absoluteIdx = filteredIndices[pointer];
+                if (absoluteIdx !== undefined) {
+                    playAlbumFromSidebar(absoluteIdx);
+                }
+            }
+        }
+
+        function updateSidebarActiveVisual() {
+            const sidebarContainer = document.getElementById('sidebar-album-list');
+            const items = sidebarContainer.querySelectorAll('[data-album-idx]');
+            const selectedAbsoluteIdx = filteredIndices[keyboardActiveIdx];
+
+            items.forEach(item => {
+                const itemIdx = parseInt(item.getAttribute('data-album-idx'), 10);
+                if (itemIdx === selectedAbsoluteIdx) {
+                    item.classList.add('bg-neutral-800', 'text-white');
+                    item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                } else {
+                    item.classList.remove('bg-neutral-800', 'text-white');
+                }
+            });
+        }
+
         function cerrarSesion() {
             localStorage.removeItem('azpwd');
             document.cookie = "azpwd=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -258,7 +338,15 @@
 
         function renderAlbums() {
             const grid = document.getElementById('albums-grid');
-            grid.innerHTML = musicData.map((item, index) => `
+            
+            if (filteredIndices.length === 0) {
+                grid.innerHTML = '<p class="text-gray-500 col-span-full">No matching albums found.</p>';
+                return;
+            }
+
+            grid.innerHTML = filteredIndices.map(index => {
+                const item = musicData[index];
+                return `
                 <div class="bg-[#181818] p-3 md:p-4 rounded-lg hover:bg-[#282828] transition cursor-pointer group shadow-lg border border-transparent hover:border-gray-800 relative" onclick="showAlbum(${index})">
                     <div class="relative w-full aspect-square mb-3 md:mb-4 overflow-hidden rounded-md shadow-md">
                         <img class="w-full h-full object-cover" src="${item.cover}" onerror="this.src='./nocover.jpg'">
@@ -277,7 +365,8 @@
                     <h4 class="text-white font-bold text-xs md:text-sm truncate">${escapeHTML(item.album)}</h4>
                     <p class="text-gray-400 text-[10px] md:text-xs mt-1">${item.tracks.length} tracks</p>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function updateTabTitle(trackTitle, isPlaying) {
@@ -333,12 +422,20 @@
 
         function renderSidebar() {
             const list = document.getElementById('sidebar-album-list');
-            list.innerHTML = musicData.map((item, index) => {
+            
+            if (filteredIndices.length === 0) {
+                list.innerHTML = '<div class="text-xs text-gray-600 pl-2">No results</div>';
+                return;
+            }
+
+            list.innerHTML = filteredIndices.map(index => {
+                const item = musicData[index];
                 const isCurrentAlbum = (currentAlbumIdx === index);
                 const safeAlbum = escapeHTML(item.album);
                 return `
                 <div onclick="showAlbum(${index})" 
                      ondblclick="playAlbumFromSidebar(${index})"
+                     data-album-idx="${index}"
                      class="transition py-1 text-xs block cursor-pointer tracking-tight whitespace-nowrap overflow-hidden text-ellipsis border-l-2 pl-2 shrink-0 ${
                     isCurrentAlbum 
                         ? 'text-[#1db954] font-bold border-[#1db954]' 
@@ -593,23 +690,16 @@
             analyser = audioContext.createAnalyser();
             analyser.fftSize = 64; 
             
-            // --- NUEVO: CREAR Y CONFIGURAR EL COMPRESOR/NORMALIZADOR ---
+            // --- COMPRESOR/NORMALIZADOR ORIGINAL ---
             const compressor = audioContext.createDynamicsCompressor();
-            // Umbral (threshold): A partir de qué nivel (-db) empieza a actuar
             compressor.threshold.setValueAtTime(-24, audioContext.currentTime);
-            // Codo (knee): Transición suave de la compresión
             compressor.knee.setValueAtTime(30, audioContext.currentTime);
-            // Relación (ratio): Cuánto comprime los picos altos (maximiza los bajos)
             compressor.ratio.setValueAtTime(12, audioContext.currentTime);
-            // Ataque y liberación rápidos para reaccionar al instante a la música
             compressor.attack.setValueAtTime(0.003, audioContext.currentTime);
             compressor.release.setValueAtTime(0.25, audioContext.currentTime);
-            // -----------------------------------------------------------
 
             source = audioContext.createMediaElementSource(audioPlayer);
             
-            // --- NUEVA CADENA DE CONEXIÓN ---
-            // Origen de audio -> Compresor/Normalizador -> Analizador VU -> Altavoces
             source.connect(compressor);
             compressor.connect(analyser);
             analyser.connect(audioContext.destination);
