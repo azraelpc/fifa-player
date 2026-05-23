@@ -167,3 +167,7 @@ Si realizas modificaciones en el código de tu `server.py` o quieres controlar e
 - **Rendimiento Móvil:** Las propiedades de visualización CSS eluden los cálculos pesados de renderizado del canvas gráfico en resoluciones inferiores a los puntos de ruptura móviles para mitigar el drenaje excesivo de batería en terminales portátiles.
 
 - **IA:** Usado Gemini AI plus para acelerar el desarrollo de la web.
+
+## ToDo / Known Issues
+
+- "Duration" en WAV/FLAC muchas veces no es nada preciso, necesito mejorarlo. En MP3 parece ir bien, y todos los formatos aparece bien durante su reproducción abajo.
