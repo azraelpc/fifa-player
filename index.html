@@ -151,21 +151,28 @@
             );
         }
 
-        async function init() {
-            try {
-                const res = await fetch('/api/music');
-                musicData = await res.json();
-                renderAlbums();
-                renderSidebar();
-                
-                // Inicializa el volumen guardado en almacenamiento local o por defecto al 80%
-                const savedVolume = localStorage.getItem('player-volume') || 0.8;
-                audioPlayer.volume = savedVolume;
-                document.getElementById('volume-slider').value = savedVolume;
-            } catch (err) {
-                console.error("Error loading library:", err);
-            }
-        }
+	async function init() {
+	    // 1. Añadimos un indicador visual antes de pedir los datos
+	    const grid = document.getElementById('albums-grid');
+	    grid.innerHTML = '<p class="text-gray-400 animate-pulse">Scanning music, please wait...</p>';
+	    
+	    try {
+	        const res = await fetch('/api/music');
+	        musicData = await res.json();
+	        
+	        // 2. Limpiamos y renderizamos
+	        grid.innerHTML = ''; 
+	        renderAlbums();
+	        renderSidebar();
+	        
+	        const savedVolume = localStorage.getItem('player-volume') || 0.8;
+	        audioPlayer.volume = savedVolume;
+	        document.getElementById('volume-slider').value = savedVolume;
+	    } catch (err) {
+	        grid.innerHTML = '<p class="text-red-500">Error loading library. Check server status.</p>';
+	        console.error("Error loading library:", err);
+	    }
+	}
 
         function changeVolume(event) {
             const vol = event.target.value;
@@ -178,7 +185,7 @@
             grid.innerHTML = musicData.map((item, index) => `
                 <div class="bg-[#181818] p-3 md:p-4 rounded-lg hover:bg-[#282828] transition cursor-pointer group shadow-lg border border-transparent hover:border-gray-800 relative" onclick="showAlbum(${index})">
                     <div class="relative w-full aspect-square mb-3 md:mb-4 overflow-hidden rounded-md">
-                        <img class="w-full h-full object-cover" src="${escapeHTML(item.cover)}" onerror="this.src='./nocover.jpg'">
+                        <img class="w-full h-full object-cover" src="${encodeURI(item.cover)}" onerror="this.src='./nocover.jpg'">
                         <button onclick="event.stopPropagation(); playAlbumFirstTrack(${index});" class="absolute bottom-2 right-2 w-9 h-9 md:w-10 md:h-10 bg-[#1db954] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-black shadow-2xl hover:scale-105 active:scale-95 cursor-pointer">
                             <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         </button>
