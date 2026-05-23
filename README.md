@@ -1,6 +1,6 @@
 # AZify Player 1.0 🎵
 
-Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. 
+Reproductor de música web ligero y responsivo inspirado en la interfaz clásica de Spotify. Sirve por hhtp por defecto en el puerto 5155.
 
 Soporta los formatos tipicos (mp3, ogg, flac, etc). El proyecto cuenta con un backend dinámico en Python y un frontend moderno y elástico con Tailwind CSS que se adapta perfectamente a cualquier resolución (incluyendo entornos móviles y ordenadores a baja resolución). 
 
@@ -12,7 +12,7 @@ Para las portadas, justo a los mp3 debe haber algun archivo de imagen, tomando c
 
 Para hacerlo sencillo (como si fueran CDs de verdad) la estructura preferible es un CD por carpeta, con su png/jpg de caratula. Aunque el script busca en todas las subcarpetas de la ruta dada (eg: "/musica/carpeta1/carpeta2/Album Chulo" aparecerá en la lista de CDs como "Album Chulo").
 
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/48af6d5a-5138-4f72-ac83-a1a14995e4e5" />
+<img width="800" alt="{402A1638-19C8-4F2D-939A-E34ABB2A5482}" src="https://github.com/user-attachments/assets/fdc33a71-37b1-4f32-9e61-a50e1304151b" />
 
 ## Características principales 
 
