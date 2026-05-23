@@ -5,9 +5,9 @@ import fcntl
 import struct
 import re
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from socketserver import ThreadingMixIn
 from urllib.parse import unquote
 
+# --- CONFIGURACIÓN ---
 MUSIC_DIR = "/superdisk/# FIFA/# FIFA DVD"
 PORT = 5154
 LOCK_FILE = "/tmp/fifaplayer.lock"
@@ -29,20 +29,14 @@ def get_track_duration(file_path):
     ext = file_path.lower()
     try:
         if ext.endswith('.wav'):
-            # Los WAV son crudos, el tamaño sí es proporcional al tiempo
             import wave
             with wave.open(file_path, 'rb') as w:
                 secs = int(w.getnframes() / float(w.getframerate()))
                 return f"{secs // 60}:{secs % 60:02d}"
-        
         elif ext.endswith('.flac'):
-            # Los FLAC son impredecibles por el tamaño, mejor usar una constante de 
-            # bits por segundo media de 700kbps (aprox 87.5 KB/s)
             secs = int(os.path.getsize(file_path) / 87500)
             return f"{secs // 60}:{secs % 60:02d}"
-            
         else:
-            # MP3 / otros comprimidos
             secs = int(os.path.getsize(file_path) / 16000)
             return f"{secs // 60}:{secs % 60:02d}"
     except:
@@ -83,8 +77,10 @@ def scan_music():
                 full_track_path = os.path.join(root, f)
                 # Escapamos el # para que el navegador no lo corte
                 file_url = f"/music/{rel_path}/{f}".replace("#", "%23")
+                
+                # Nombre con extensión incluido
                 tracks_data.append({
-                    "title": os.path.splitext(f)[0],
+                    "title": f, 
                     "file": file_url,
                     "duration": get_track_duration(full_track_path)
                 })
@@ -106,7 +102,7 @@ class MusicServerHandler(BaseHTTPRequestHandler):
 
     def manejar_fichero_audio(self, full_path):
         size = os.path.getsize(full_path)
-        mime = 'audio/mpeg' # Simplificado para evitar errores
+        mime = 'audio/mpeg'
         
         range_header = self.headers.get('Range')
         start, end = 0, size - 1
@@ -115,11 +111,6 @@ class MusicServerHandler(BaseHTTPRequestHandler):
             if match:
                 start = int(match.group(1))
                 if match.group(2): end = int(match.group(2))
-
-        if start >= size:
-            self.send_response(416)
-            self.end_headers()
-            return
 
         self.send_response(206 if range_header else 200)
         self.send_header('Content-Type', mime)
@@ -133,6 +124,7 @@ class MusicServerHandler(BaseHTTPRequestHandler):
             self.wfile.write(f.read(end - start + 1))
 
     def do_GET(self):
+        # API de librería
         if self.path == '/api/music':
             self.send_response(200)
             self.send_header('Content-Type', 'application/json; charset=utf-8')
@@ -140,8 +132,8 @@ class MusicServerHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(scan_music()).encode('utf-8'))
             return
 
+        # Servir ficheros de música/imágenes
         if self.path.startswith('/music/'):
-            # Decodificamos el path, esto convertirá %23 de vuelta a #
             rel_file_path = unquote(self.path[7:])
             base_dir_abs = os.path.realpath(MUSIC_DIR)
             full_path = os.path.normpath(os.path.join(base_dir_abs, rel_file_path))
@@ -161,7 +153,7 @@ class MusicServerHandler(BaseHTTPRequestHandler):
             self.send_error(404)
             return
 
-        # Servir index o imagenes locales
+        # Servir index.html
         base_dir = os.path.dirname(os.path.abspath(__file__))
         path = 'index.html' if self.path == '/' else unquote(self.path).lstrip('/')
         full_path = os.path.join(base_dir, path)
@@ -175,4 +167,5 @@ class MusicServerHandler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     evitar_doble_ejecucion()
     server = HTTPServer(('0.0.0.0', PORT), MusicServerHandler)
+    print(f"Servidor iniciado en puerto {PORT}")
     server.serve_forever()

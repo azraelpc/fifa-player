@@ -32,7 +32,7 @@
                 <span>FIFA RetroPlayer</span>
             </div>            
             <div class="flex flex-col gap-4 text-gray-400 font-bold text-sm flex-shrink-0">
-                <a href="#" onclick="window.location.reload()" class="hover:text-white flex items-center gap-3 text-white transition">Home</a>
+		<a href="#" onclick="showHome()" class="hover:text-white flex items-center gap-3 text-white transition">Home</a>
                 <button onclick="playAll()" class="hover:text-white flex items-center gap-3 transition text-left cursor-pointer w-full">Play All</button>
                 <div class="border-t border-gray-800 my-1"></div>
                 <p class="text-xs uppercase tracking-wider text-gray-500 font-black">Your Library</p>
@@ -142,6 +142,11 @@
         const pauseIcon = document.getElementById('pause-icon');
 
         let audioContext, analyser, dataArray, canvas, ctx, source;
+
+	function showHome() {
+	    document.getElementById('album-view').classList.add('hidden');
+	    document.getElementById('main-view').classList.remove('hidden');
+	}
 
         // Función de seguridad: Sanitiza cadenas de texto para prevenir DOM-based XSS
         function escapeHTML(str) {
@@ -266,7 +271,8 @@
                 const isPlaying = isCurrent && !audioPlayer.paused;
 
                 return `
-                <tr class="hover:bg-white/5 transition group ${isCurrent ? 'bg-white/5 text-[#1db954]' : ''}">
+                <tr ondblclick="pressTrackRow(${index}, ${trackIdx})"
+		    class="hover:bg-white/5 transition group ${isCurrent ? 'bg-white/5 text-[#1db954]' : ''}">
                     <td class="p-2 md:p-3 text-center text-gray-500 font-bold">${trackIdx + 1}</td>
                     <td class="p-2 md:p-3 text-center">
                         <button onclick="pressTrackRow(${index}, ${trackIdx})" class="text-gray-400 hover:text-[#1db954] transition cursor-pointer">
