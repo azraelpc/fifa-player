@@ -490,8 +490,25 @@
             analyser = audioContext.createAnalyser();
             analyser.fftSize = 64; 
             
+            // --- NUEVO: CREAR Y CONFIGURAR EL COMPRESOR/NORMALIZADOR ---
+            const compressor = audioContext.createDynamicsCompressor();
+            // Umbral (threshold): A partir de qué nivel (-db) empieza a actuar
+            compressor.threshold.setValueAtTime(-24, audioContext.currentTime);
+            // Codo (knee): Transición suave de la compresión
+            compressor.knee.setValueAtTime(30, audioContext.currentTime);
+            // Relación (ratio): Cuánto comprime los picos altos (maximiza los bajos)
+            compressor.ratio.setValueAtTime(12, audioContext.currentTime);
+            // Ataque y liberación rápidos para reaccionar al instante a la música
+            compressor.attack.setValueAtTime(0.003, audioContext.currentTime);
+            compressor.release.setValueAtTime(0.25, audioContext.currentTime);
+            // -----------------------------------------------------------
+
             source = audioContext.createMediaElementSource(audioPlayer);
-            source.connect(analyser);
+            
+            // --- NUEVA CADENA DE CONEXIÓN ---
+            // Origen de audio -> Compresor/Normalizador -> Analizador VU -> Altavoces
+            source.connect(compressor);
+            compressor.connect(analyser);
             analyser.connect(audioContext.destination);
 
             dataArray = new Uint8Array(analyser.frequencyBinCount);
