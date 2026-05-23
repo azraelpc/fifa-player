@@ -128,9 +128,10 @@
 	        <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
 	            <path d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L7.75 9.5H4.5v5h3.25L12 18.75z"></path>
 	        </svg>
-	        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" 
-	               class="w-16 sm:w-20 h-1 bg-[#404040] rounded-full appearance-none cursor-pointer accent-[#1db954]" 
-	               oninput="changeVolume(event)">
+            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" 
+                   class="w-16 sm:w-20 h-1 bg-[#404040] rounded-full appearance-none cursor-pointer accent-[#1db954]" 
+                   oninput="changeVolume(event)"
+                   onwheel="scrollVolume(event)">
 	    </div>
 	</div>
 
@@ -224,6 +225,28 @@
             audioPlayer.volume = vol;
             localStorage.setItem('player-volume', vol);
         }
+
+        function scrollVolume(event) {
+            // Evita que la página haga scroll vertical al usar la rueda sobre el slider
+            event.preventDefault(); 
+
+            const slider = event.currentTarget;
+            // deltaY es negativo hacia arriba (subir volumen) y positivo hacia abajo (bajar volumen)
+            const step = 0.05; // Cambia este valor si quieres que suba/baje más rápido o más lento
+            
+            let newVolume = parseFloat(slider.value) + (event.deltaY < 0 ? step : -step);
+            
+            // Forzamos a que el volumen se mantenga entre los límites correctos (0.0 y 1.0)
+            newVolume = Math.max(0, Math.min(1, newVolume));
+            
+            // Actualizamos visualmente el slider
+            slider.value = newVolume;
+            
+            // Aplicamos el volumen al reproductor y guardamos en el localStorage
+            audioPlayer.volume = newVolume;
+            localStorage.setItem('player-volume', newVolume);
+        }
+
 
         function playAlbumFromSidebar(index) {
             isShuffleActive = false; // Desactiva el shuffle al saltar a una carpeta nueva
