@@ -664,7 +664,13 @@
 
         function playAll() {
             if (musicData.length > 0 && musicData[0].tracks.length > 0) {
-                playTrack(0, 0);
+                // Forzamos la apertura visual del primer álbum antes de reproducir
+                showAlbum(0);
+                
+                // Dejamos 50ms para que el navegador pinte la cabecera y luego arrancamos el audio
+                setTimeout(() => {
+                    playTrack(0, 0);
+                }, 50);
             }
         }
 
