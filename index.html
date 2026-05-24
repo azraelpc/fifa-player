@@ -227,17 +227,16 @@
                 // Foco por defecto en el filtro
                 document.getElementById('search-filter').focus();
 
-                // Auto-refresco en segundo plano a los 7 segundos
-                setTimeout(async () => {
+                const intervaloRefresco = setInterval(async () => {
                     const checkRes = await fetch('/api/music', { headers: { 'X-Azify-Pass': pwd } });
                     if (checkRes.status === 200) {
                         const newData = await checkRes.json();
                         
-                        // COMPARACIÓN REAL: Detecta cambios en carpetas, canciones, nombres o carátulas
+                        // Si detecta cualquier cambio en la estructura de la música...
                         if (JSON.stringify(newData) !== JSON.stringify(musicData)) {
                             musicData = newData;
                             
-                            // Recalcula los índices basándose en lo que haya escrito en el filtro
+                            // Recalcula los índices respetando lo que tengas escrito en el buscador
                             const query = document.getElementById('search-filter').value.toLowerCase().trim();
                             filteredIndices = [];
                             musicData.forEach((item, index) => {
@@ -245,11 +244,17 @@
                                     filteredIndices.push(index);
                                 }
                             });
+                            
+                            // Redibuja la interfaz con el contenido nuevo
                             renderAlbums();
                             renderSidebar();
+                            
+                            // ¡Éxito! Como ya ha cargado los cambios en tu sesión, apagamos el bucle
+                            clearInterval(intervaloRefresco);
+                            console.log("Biblioteca sincronizada con éxito en segundo plano.");
                         }
                     }
-                }, 7000);
+                }, 5000); // Comprueba cada 5 segundos
 
 
             } catch (err) {

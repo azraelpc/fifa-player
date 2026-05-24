@@ -5,6 +5,9 @@ import fcntl
 import struct
 import re
 import hashlib
+import time
+import threading
+
 from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from urllib.parse import unquote
 
@@ -317,18 +320,24 @@ class MusicServerHandler(BaseHTTPRequestHandler):
             self.send_error(500)
 
 CACHED_LIBRARY = []
-
-import threading
 lock_escaneo = threading.Lock()
+ULTIMO_ESCANEO = 0
 
 def actualizar_biblioteca():
-    global CACHED_LIBRARY
-    # Si ya se está escaneando, salimos para no duplicar procesos en el disco
+    global CACHED_LIBRARY, ULTIMO_ESCANEO
+    
+    # Si ya se está escaneando, salimos para no duplicar procesos
     if not lock_escaneo.acquire(blocking=False):
         return
     try:
+        ahora = time.time()
+        # COOLDOWN: Si no han pasado 60 segundos desde el último escaneo, ignoramos el disco
+        if ahora - ULTIMO_ESCANEO < 60:
+            return
+            
         print("Escaneando biblioteca en segundo plano...")
         CACHED_LIBRARY = scan_music()
+        ULTIMO_ESCANEO = ahora  # Guardamos la hora del escaneo actual
         print("Escaneo en segundo plano completado.")
     finally:
         lock_escaneo.release()
